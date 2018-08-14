@@ -1,0 +1,19 @@
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: downloader
+spec:
+  # "*/1 * * * *"
+  startingDeadlineSeconds: 3000
+  concurrencyPolicy: Replace
+  schedule: @hourly
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: downloader
+            image: moritzgoeckel/news-service:downloader
+          # Never?
+          restartPolicy: OnFailure
+

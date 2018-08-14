@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+
+kind: Deployment
+
+metadata:
+    name: downloader
+
+spec:
+    replicas: 1
+  
+    selector:
+        matchLabels:
+            app: downloader
+            
+    strategy:
+      type: RollingUpdate
+      rollingUpdate:
+        maxUnavailable: 1
+        maxSurge: 1
+
+    template:
+        metadata:
+            labels:
+                app: downloader
+                tier: backend
+                persistance: disposable
+                project: news
+
+        spec:
+          containers:
+          - name:  downloader
+            image: moritzgoeckel/news-service:downloader
