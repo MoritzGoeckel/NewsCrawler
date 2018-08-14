@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+
+kind: Deployment
+
+metadata:
+    name: static-frontend-server
+
+spec:
+    replicas: 1
+  
+    selector:
+        matchLabels:
+            app: static-frontend-server
+            
+    strategy:
+      type: RollingUpdate
+      rollingUpdate:
+        maxUnavailable: 1
+        maxSurge: 1
+
+    template:
+        metadata:
+            labels:
+                app: static-frontend-server
+                tier: frontend
+                persistance: disposable
+                project: news
+
+        spec:
+          containers:
+          - name:  static-frontend-server
+            image: moritzgoeckel/news-service:static-content-server 
+            ports:
+            - containerPort: 80
+
+---
+
+apiVersion: v1
+
+kind: Service
+
+metadata:
+    name: static-frontend-server 
+    namespace: default
+    labels:
+        project: news
+        tier: frontend
+        app: static-frontend-server
+
+spec:
+    type: LoadBalancer
+    ports:
+      - port: 80
+        nodePort: 30001
+        protocol: TCP
+    selector:
+        app: static-frontend-server
+
+# Internal URL
+# frontend-server.default.svc.cluster.local
