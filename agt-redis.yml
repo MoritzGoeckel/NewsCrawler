@@ -1,0 +1,69 @@
+apiVersion: apps/v1
+
+kind: Deployment
+
+metadata:
+    name: agt-redis
+
+spec:
+    replicas: 1
+
+    selector:
+        matchLabels:
+            app: agt-redis
+
+    strategy:
+      type: RollingUpdate
+      rollingUpdate:
+        maxUnavailable: 1
+        maxSurge: 1
+
+    template:
+        metadata:
+            labels:
+                app: agt-redis
+                tier: backend
+                persistance: non-disposable
+                project: news
+
+        spec:
+          containers:
+          - name: agt-redis
+            image: redis
+            ports:
+            - containerPort: 6379
+            volumeMounts:
+            - mountPath: /data/
+              name: agt-redis-volume
+              readOnly: false
+
+          volumes:
+          - name: agt-redis-volume
+            hostPath:
+                path: /home/docker/data/agt-redis-volume/
+                type: DirectoryOrCreate
+---
+# Maybe expose externally for testing purposes?
+
+apiVersion: v1
+
+kind: Service
+
+metadata:
+    name: agt-redis
+    namespace: default
+    labels:
+        project: news
+        tier: backend
+        app: agt-redis
+
+spec:
+    type: ClusterIP
+    ports:
+      - port: 6379 
+        targetPort: 6379
+        protocol: TCP
+    selector:
+        app: agt-redis
+
+# agt-redis.default.svc.cluster.local
