@@ -4,30 +4,32 @@
 package main
 
 import (
-	"fmt"
+	"strconv"
+    "os"
+    "fmt"
 	"log"
 	"net/http"
     "github.com/go-redis/redis"
 	"github.com/PuerkitoBio/goquery"
 )
 
-// This example scrapes the reviews shown on the home page of metalsucks.net.
 func main() {
-    url := "agt-redis.default.svc.cluster.local"
+    //agt, pq := getRedisConnections()
 
-    client := redis.NewClient(&redis.Options{
-        Addr:     url + ":6379",
-        Password: "",
-        DB:       0,
-    })
+    doc := getHTML("http://spiegel.de")
 
-    err := client.Set("thekey", "thevalue", 0).Err()
-    if err != nil {
-        log.Fatal(err)
-    }
+	doc.Find(".headline").Each(func(i int, s *goquery.Selection) {
+		//band := s.Find("a").Text()
+		//title := s.Find("i").Text()
+		//fmt.Printf("Review %d: %s - %s\n", i, band, title)
+        fmt.Println(s.Text())
+	})
 
-    // Request the HTML page.
-	res, err := http.Get("http://metalsucks.net")
+    fmt.Println("eop")
+}
+
+func getHTML(url string) *goquery.Document {
+    res, err := http.Get(url)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -37,25 +39,59 @@ func main() {
 		log.Fatalf("status code error: %d %s", res.StatusCode, res.Status)
 	}
 
-	// Load the HTML document
 	doc, err := goquery.NewDocumentFromReader(res.Body)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	// Find the review items
-	doc.Find(".sidebar-reviews article .content-block").Each(func(i int, s *goquery.Selection) {
-		// For each item found, get the band and title
-		band := s.Find("a").Text()
-		title := s.Find("i").Text()
-		fmt.Printf("Review %d: %s - %s\n", i, band, title)
-	})
+    return doc
+}
 
-    fmt.Println("eop")
+func pushNewEntry(data string, client *redis.Client){
+    err := client.LPush("pending", data).Err()
+    if err != nil {
+        log.Fatal(err)
+    }
+}
 
-	// To see the output of the Example while running the test suite (go test), simply
-	// remove the leading "x" before Output on the next line. This will cause the
-	// example to fail (all the "real" tests should pass).
+func getAlreadyGotThat(hash int, client *redis.Client) bool{
+    _, err := client.Get(strconv.Itoa(hash)).Result()
+    if err == redis.Nil {
+        return false
+    } else if err != nil {
+        log.Fatal(err)
+        return true
+    } else {
+        return true
+        //fmt.Println("key2", val)
+    }
+}
 
-	// xOutput: voluntarily fail the Example output.
+func setAlreadyGotThat(hash int, client *redis.Client) {
+    err := client.Set(strconv.Itoa(hash), "seen",  60 * 60 * 72).Err()
+    if err != nil {
+        log.Fatal(err)
+    }
+}
+
+func getRedisConnections() (*redis.Client, *redis.Client){
+    agtUrl := os.Getenv("agt-redis-url")
+    pqUrl := os.Getenv("pq-redis-url")
+
+    fmt.Println("agt url: " + agtUrl)
+    fmt.Println("pq url: " + pqUrl)
+
+    agtClient := redis.NewClient(&redis.Options{
+        Addr:     agtUrl + ":6379",
+        Password: "",
+        DB:       0,
+    })
+
+    pqClient := redis.NewClient(&redis.Options{
+        Addr:     pqUrl + ":6379",
+        Password: "",
+        DB:       0,
+    })
+
+    return agtClient, pqClient
 }

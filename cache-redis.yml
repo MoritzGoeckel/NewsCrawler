@@ -1,0 +1,69 @@
+apiVersion: apps/v1
+
+kind: Deployment
+
+metadata:
+    name: cache-redis
+
+spec:
+    replicas: 1
+
+    selector:
+        matchLabels:
+            app: cache-redis
+
+    strategy:
+      type: RollingUpdate
+      rollingUpdate:
+        maxUnavailable: 1
+        maxSurge: 1
+
+    template:
+        metadata:
+            labels:
+                app: cache-redis
+                tier: backend
+                persistance: non-disposable
+                project: news
+
+        spec:
+          containers:
+          - name: cache-redis
+            image: redis
+            ports:
+            - containerPort: 6379
+            volumeMounts:
+            - mountPath: /data/
+              name: cache-redis-volume
+              readOnly: false
+
+          volumes:
+          - name: cache-redis-volume
+            hostPath:
+                path: /home/docker/data/cache-redis-volume/
+                type: DirectoryOrCreate
+---
+# Maybe expose externally for testing purposes?
+
+apiVersion: v1
+
+kind: Service
+
+metadata:
+    name: cache-redis
+    namespace: default
+    labels:
+        project: news
+        tier: backend
+        app: cache-redis
+
+spec:
+    type: ClusterIP
+    ports:
+      - port: 6379 
+        targetPort: 6379
+        protocol: TCP
+    selector:
+        app: cache-redis
+
+# cache-redis.default.svc.cluster.local
