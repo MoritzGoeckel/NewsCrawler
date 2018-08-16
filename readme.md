@@ -1,11 +1,11 @@
 ## TODO:
 
-- [ ] Static Content Server
-- [ ] Downloader
+- [D] Static Content Server
+- [I] Downloader
 - [ ] Elastic Search
 - [ ] MongoDB
-- [ ] "Already got that filter" Redis
+- [T] "Already got that filter" Redis
 - [ ] Dynamic Content API
-- [ ] Redis Cache
-- [ ] Kafka Queue for Processing
+- [T] Redis Cache
+- [T] Kafka Queue for Processing
 - [ ] Processor
