@@ -15,7 +15,7 @@ spec:
             image: moritzgoeckel/news-service:downloader
             env:
             - name: agt-redis-url
-              value: agt-redis.default.svc.cluster.local"
+              value: agt-redis.default.svc.cluster.local
             - name: pq-redis-url
-              value: pq-redis.default.svc.cluster.local"
+              value: pq-redis.default.svc.cluster.local
           restartPolicy: OnFailure

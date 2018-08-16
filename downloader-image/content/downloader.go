@@ -4,7 +4,8 @@
 package main
 
 import (
-	"strconv"
+	"hash/fnv"
+    "time"
     "os"
     "fmt"
 	"log"
@@ -14,18 +15,36 @@ import (
 )
 
 func main() {
-    //agt, pq := getRedisConnections()
+    fmt.Println("Downloader version 0.01")
+
+    agt, pq := getRedisConnections()
 
     doc := getHTML("http://spiegel.de")
 
 	doc.Find(".headline").Each(func(i int, s *goquery.Selection) {
 		//band := s.Find("a").Text()
 		//title := s.Find("i").Text()
-		//fmt.Printf("Review %d: %s - %s\n", i, band, title)
-        fmt.Println(s.Text())
+
+        headline := s.Text()
+        h := hashString(headline)
+        pushed := false
+
+        if !alreadyGotThat(h, agt) {
+            setAlreadyGotThat(h, agt)
+            pushNewEntry(headline, pq)
+            pushed = true
+        }
+
+        fmt.Println("New: " + fmt.Sprint(pushed) + "\t" + fmt.Sprint(h) + "\t" + headline)
 	})
 
     fmt.Println("eop")
+}
+
+func hashString(s string) uint32 {
+    h := fnv.New32a()
+    h.Write([]byte(s))
+    return h.Sum32()
 }
 
 func getHTML(url string) *goquery.Document {
@@ -54,8 +73,8 @@ func pushNewEntry(data string, client *redis.Client){
     }
 }
 
-func getAlreadyGotThat(hash int, client *redis.Client) bool{
-    _, err := client.Get(strconv.Itoa(hash)).Result()
+func alreadyGotThat(hash uint32, client *redis.Client) bool{
+    _, err := client.Get(fmt.Sprint(hash)).Result()
     if err == redis.Nil {
         return false
     } else if err != nil {
@@ -67,8 +86,9 @@ func getAlreadyGotThat(hash int, client *redis.Client) bool{
     }
 }
 
-func setAlreadyGotThat(hash int, client *redis.Client) {
-    err := client.Set(strconv.Itoa(hash), "seen",  60 * 60 * 72).Err()
+func setAlreadyGotThat(hash uint32, client *redis.Client) {
+    expiration := time.Duration(72) * time.Hour
+    err := client.Set(fmt.Sprint(hash), "seen",  expiration).Err()
     if err != nil {
         log.Fatal(err)
     }
