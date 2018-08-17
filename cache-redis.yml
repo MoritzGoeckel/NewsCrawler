@@ -43,7 +43,6 @@ spec:
                 path: /home/docker/data/cache-redis-volume/
                 type: DirectoryOrCreate
 ---
-# Maybe expose externally for testing purposes?
 
 apiVersion: v1
 

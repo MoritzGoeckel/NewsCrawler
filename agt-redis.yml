@@ -43,8 +43,6 @@ spec:
                 path: /home/docker/data/agt-redis-volume/
                 type: DirectoryOrCreate
 ---
-# Maybe expose externally for testing purposes?
-
 apiVersion: v1
 
 kind: Service

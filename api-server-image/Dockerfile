@@ -10,4 +10,4 @@ RUN go install -v ./...
 
 CMD ["app"]
 
-LABEL name="downloader"
+LABEL name="api-server"

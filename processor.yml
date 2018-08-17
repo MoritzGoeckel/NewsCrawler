@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+
+kind: Deployment
+
+metadata:
+    name: processor
+
+spec:
+    replicas: 1
+
+    selector:
+        matchLabels:
+            app: processor
+
+    strategy:
+      type: RollingUpdate
+      rollingUpdate:
+        maxUnavailable: 1
+        maxSurge: 1
+
+    template:
+        metadata:
+            labels:
+                app: processor
+                tier: backend
+                persistance: disposable
+                project: news
+
+        spec:
+          containers:
+          - name: processor
+            image: moritzgoeckel/news-service:processor
+            env:
+            - name: pq-redis-url
+              value: pq-redis.default.svc.cluster.local
+            - name: mongodb-url
+              value: NOTSET
+            - name: elastic-url
+              value: NOTSET

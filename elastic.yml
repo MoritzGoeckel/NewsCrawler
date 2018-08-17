@@ -3,14 +3,14 @@ apiVersion: apps/v1
 kind: Deployment
 
 metadata:
-    name: pq-redis
+    name: elastic
 
 spec:
     replicas: 1
 
     selector:
         matchLabels:
-            app: pq-redis
+            app: elastic
 
     strategy:
       type: RollingUpdate
@@ -21,47 +21,55 @@ spec:
     template:
         metadata:
             labels:
-                app: pq-redis
+                app: elastic
                 tier: backend
                 persistance: non-disposable
                 project: news
 
         spec:
           containers:
-          - name: pq-redis
-            image: redis
+          - name: elastic
+            image: docker.elastic.co/elasticsearch/elasticsearch:6.3.2
+            env:
+            - name: cluster.name
+              value: elastic-cluster
+            - name: bootstrap.memory_lock
+              value: true            
+            - name: ES_JAVA_OPTS
+              value: "-Xms512m -Xmx512m"
             ports:
-            - containerPort: 6379
+            - containerPort: 9200
             volumeMounts:
-            - mountPath: /data/
-              name: pq-redis-volume
+            - mountPath: /usr/share/elasticsearch/data/
+              name: elastic-volume
               readOnly: false
 
           volumes:
-          - name: pq-redis-volume
+          - name: elastic-volume
             hostPath:
-                path: /home/docker/data/pq-redis-volume/
+                path: /home/docker/data/elastic-volume/
                 type: DirectoryOrCreate
 ---
+
 apiVersion: v1
 
 kind: Service
 
 metadata:
-    name: pq-redis
+    name: elastic
     namespace: default
     labels:
         project: news
         tier: backend
-        app: pq-redis
+        app: elastic
 
 spec:
     type: ClusterIP
     ports:
-      - port: 6379 
-        targetPort: 6379
+      - port: 9200 
+        targetPort: 9200
         protocol: TCP
     selector:
-        app: pq-redis
+        app: elastic
 
-# pq-redis.default.svc.cluster.local
+# elastic.default.svc.cluster.local
