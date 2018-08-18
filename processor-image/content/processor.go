@@ -1,117 +1,169 @@
-// go get github.com/PuerkitoBio/goquery
-// go get -u github.com/go-redis/redis
-
 package main
 
 import (
-	"hash/fnv"
-    "time"
-    "os"
-    "fmt"
+	"context"
+	"fmt"
 	"log"
-	"net/http"
-    "github.com/go-redis/redis"
-	"github.com/PuerkitoBio/goquery"
+	"os"
+	"time"
+
+	"github.com/go-redis/redis"
+	"github.com/olivere/elastic"
+	"gopkg.in/mgo.v2"
 )
 
+type bsonArticle struct {
+	Headline string    `bson:"headline"`
+	Content  string    `bson:"content"`
+	Source   string    `bson:"source"`
+	Time     time.Time `bson:"time"`
+}
+
+type jsonArticle struct {
+	Headline string                `json:"headline"`
+	Content  string                `json:"content"`
+	Source   string                `json:"source"`
+	Time     time.Time             `json:"time"`
+	Suggest  *elastic.SuggestField `json:"suggest_field,omitempty"`
+}
+
+const elasticMapping = `
+{
+	"settings":{
+		"number_of_shards": 1,
+		"number_of_replicas": 0
+	},
+	"mappings":{
+		"article":{
+			"properties":{
+				"headline":{
+					"type":"text",
+					"store": true,
+					"fielddata": true
+                },
+                "content":{
+					"type":"text",
+					"store": true,
+					"fielddata": true
+				},
+				"time":{
+					"type":"date"
+				},
+				"suggest_field":{
+					"type":"completion"
+				}
+			}
+		}
+	}
+}`
+
 func main() {
-    fmt.Println("Downloader version 0.01")
+	fmt.Println("Downloader version 0.01")
 
-    agt, pq := getRedisConnections()
+	ctx := context.Background()
+	pq, elastic, mongo := getConnections()
+	defer mongo.Close()
 
-    doc := getHTML("http://spiegel.de")
+	ensureIndex(&ctx, elastic)
 
-	doc.Find(".headline").Each(func(i int, s *goquery.Selection) {
-		//band := s.Find("a").Text()
-		//title := s.Find("i").Text()
+	for {
+		message := getNextInQueue(pq)
+		insertIntoMongo(bsonArticle{Headline: message, Content: "NOTSET", Source: "NOTSET", Time: time.Now()}, mongo)
+		insertIntoElastic(jsonArticle{Headline: message, Content: "NOTSET", Source: "NOTSET", Time: time.Now()}, &ctx, elastic)
+	}
 
-        headline := s.Text()
-        h := hashString(headline)
-        pushed := false
+	fmt.Println("eop")
+}
 
-        if !alreadyGotThat(h, agt) {
-            setAlreadyGotThat(h, agt)
-            pushNewEntry(headline, pq)
-            pushed = true
-        }
+func getNextInQueue(client *redis.Client) string {
+	for {
+		val, err := client.BLPop(30*time.Second, "pending").Result()
+		if err == redis.Nil {
+			continue
+		} else if err != nil {
+			log.Fatal(err)
+			time.Sleep(10 * time.Second)
+			continue
+		} else {
+			return val[1]
+		}
+	}
+}
 
-        fmt.Println("New: " + fmt.Sprint(pushed) + "\t" + fmt.Sprint(h) + "\t" + headline)
+func insertIntoMongo(data bsonArticle, mongo *mgo.Session) {
+	collection := mongo.DB("news").C("articles")
+
+	err := collection.Insert(data)
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func ensureIndex(ctx *context.Context, client *elastic.Client) {
+	exists, err := client.IndexExists("twitter").Do(*ctx)
+	if err != nil {
+		panic(err)
+	}
+	if !exists {
+		createIndex, err := client.CreateIndex("twitter").BodyString(elasticMapping).Do(*ctx)
+		if err != nil {
+			log.Fatal(err)
+		}
+		if !createIndex.Acknowledged {
+			log.Fatal("Surprise: Index not acknowledged!")
+		}
+	}
+}
+
+// https://olivere.github.io/elastic/
+func insertIntoElastic(article jsonArticle, ctx *context.Context, client *elastic.Client) {
+	put1, err := client.Index().
+		Index("articles").
+		Type("article").
+		Id("1"). //How to assign an id automatically?
+		BodyJson(article).
+		Do(*ctx)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Printf("Indexed Article %s to index %s, type %s\n", put1.Id, put1.Index, put1.Type)
+}
+
+func getConnections() (*redis.Client, *elastic.Client, *mgo.Session) {
+	pqUrl := os.Getenv("pq-redis-url")
+	elasticUrl := os.Getenv("elastic-url")
+	mongoUrl := os.Getenv("mongo-url")
+
+	fmt.Println("pq url: " + pqUrl)
+	fmt.Println("elastic url: " + elasticUrl)
+	fmt.Println("mongo url: " + mongoUrl)
+
+	pqClient := redis.NewClient(&redis.Options{
+		Addr:     pqUrl + ":6379",
+		Password: "",
+		DB:       0,
 	})
 
-    fmt.Println("eop")
-}
-
-func hashString(s string) uint32 {
-    h := fnv.New32a()
-    h.Write([]byte(s))
-    return h.Sum32()
-}
-
-func getHTML(url string) *goquery.Document {
-    res, err := http.Get(url)
+	elasticClient, err := elastic.NewClient(
+		elastic.SetURL(elasticUrl+":9200"),
+		elastic.SetSniff(false),
+	)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	defer res.Body.Close()
-	if res.StatusCode != 200 {
-		log.Fatalf("status code error: %d %s", res.StatusCode, res.Status)
-	}
-
-	doc, err := goquery.NewDocumentFromReader(res.Body)
+	mongoClient, err := mgo.DialWithInfo(&mgo.DialInfo{
+		Addrs: []string{mongoUrl + ":27017"},
+		// Username: Username,
+		// Password: Password,
+		// Database: Database,
+		// DialServer: func(addr *mgo.ServerAddr) (net.Conn, error) {
+		// 	return tls.Dial("tcp", addr.String(), &tls.Config{})
+		// },
+	})
 	if err != nil {
 		log.Fatal(err)
 	}
 
-    return doc
-}
-
-func pushNewEntry(data string, client *redis.Client){
-    err := client.LPush("pending", data).Err()
-    if err != nil {
-        log.Fatal(err)
-    }
-}
-
-func alreadyGotThat(hash uint32, client *redis.Client) bool{
-    _, err := client.Get(fmt.Sprint(hash)).Result()
-    if err == redis.Nil {
-        return false
-    } else if err != nil {
-        log.Fatal(err)
-        return true
-    } else {
-        return true
-        //fmt.Println("key2", val)
-    }
-}
-
-func setAlreadyGotThat(hash uint32, client *redis.Client) {
-    expiration := time.Duration(72) * time.Hour
-    err := client.Set(fmt.Sprint(hash), "seen",  expiration).Err()
-    if err != nil {
-        log.Fatal(err)
-    }
-}
-
-func getRedisConnections() (*redis.Client, *redis.Client){
-    agtUrl := os.Getenv("agt-redis-url")
-    pqUrl := os.Getenv("pq-redis-url")
-
-    fmt.Println("agt url: " + agtUrl)
-    fmt.Println("pq url: " + pqUrl)
-
-    agtClient := redis.NewClient(&redis.Options{
-        Addr:     agtUrl + ":6379",
-        Password: "",
-        DB:       0,
-    })
-
-    pqClient := redis.NewClient(&redis.Options{
-        Addr:     pqUrl + ":6379",
-        Password: "",
-        DB:       0,
-    })
-
-    return agtClient, pqClient
+	return pqClient, elasticClient, mongoClient
 }
