@@ -58,7 +58,7 @@ const elasticMapping = `
 }`
 
 func main() {
-	fmt.Println("Downloader version 0.01")
+	fmt.Println("Processor version 0.01")
 
 	ctx := context.Background()
 	pq, elastic, mongo := getConnections()
@@ -68,11 +68,10 @@ func main() {
 
 	for {
 		message := getNextInQueue(pq)
+		fmt.Println("Processing message: " + message)
 		insertIntoMongo(bsonArticle{Headline: message, Content: "NOTSET", Source: "NOTSET", Time: time.Now()}, mongo)
 		insertIntoElastic(jsonArticle{Headline: message, Content: "NOTSET", Source: "NOTSET", Time: time.Now()}, &ctx, elastic)
 	}
-
-	fmt.Println("eop")
 }
 
 func getNextInQueue(client *redis.Client) string {
@@ -152,10 +151,15 @@ func getConnections() (*redis.Client, *elastic.Client, *mgo.Session) {
 		log.Fatal(err)
 	}
 
+	mongoPw := os.Getenv("mongo-pw")
+	mongoUser := os.Getenv("mongo-user")
+
+	fmt.Println("Mongo credentials: " + mongoUser + " " + mongoPw)
+
 	mongoClient, err := mgo.DialWithInfo(&mgo.DialInfo{
-		Addrs: []string{mongoUrl + ":27017"},
-		// Username: Username,
-		// Password: Password,
+		Addrs:    []string{mongoUrl + ":27017"},
+		Username: mongoUser,
+		Password: mongoPw,
 		// Database: Database,
 		// DialServer: func(addr *mgo.ServerAddr) (net.Conn, error) {
 		// 	return tls.Dial("tcp", addr.String(), &tls.Config{})

@@ -8,7 +8,7 @@ import (
 )
 
 func main() {
-	fmt.Println("Downloader version 0.01")
+	fmt.Println("API-Server version 0.01")
 
 	cache := getRedisConnection()
 

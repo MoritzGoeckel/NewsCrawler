@@ -33,7 +33,11 @@ spec:
             env:
             - name: pq-redis-url
               value: pq-redis.default.svc.cluster.local
-            - name: mongodb-url
-              value: NOTSET
+            - name: mongo-url
+              value: mongodb.default.svc.cluster.local
+            - name: mongo-user
+              value: root
+            - name: mongo-pw
+              value: thepw
             - name: elastic-url
-              value: NOTSET
+              value: elastic.default.svc.cluster.local
