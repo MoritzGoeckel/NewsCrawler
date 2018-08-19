@@ -146,6 +146,8 @@ func getConnections() (*redis.Client, *elastic.Client, *mgo.Session) {
 
 	fmt.Println("mongo credentials: " + mongoUser + " " + mongoPw)
 
+    fmt.Println("Connecting to redis...")
+
 	pqClient := redis.NewClient(&redis.Options{
 		Addr:     pqUrl + ":6379",
 		Password: "",
@@ -153,6 +155,7 @@ func getConnections() (*redis.Client, *elastic.Client, *mgo.Session) {
 	})
 
     fmt.Println("Redis connection established")
+    fmt.Println("Connecting to elastic...")
 
     elasticClient, err := elastic.NewClient(
         elastic.SetURL("http://"+elasticUrl+":9200"),
@@ -163,12 +166,12 @@ func getConnections() (*redis.Client, *elastic.Client, *mgo.Session) {
 	}
 
     fmt.Println("Elastic connection established")
+    fmt.Println("Connecting to mongo...")
 
 	mongoClient, err := mgo.DialWithInfo(&mgo.DialInfo{
         Addrs:    []string{mongoUrl + ":27017"},
 		Username: mongoUser,
 		Password: mongoPw,
-		//Database: "news",
 	})
 	if err != nil {
 		log.Fatal(err)
