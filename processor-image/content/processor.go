@@ -58,13 +58,15 @@ const elasticMapping = `
 }`
 
 func main() {
-	fmt.Println("Processor version 0.01")
+	fmt.Println("Processor version 0.02")
 
 	ctx := context.Background()
 	pq, elastic, mongo := getConnections()
-	defer mongo.Close()
+	//defer mongo.Close()
 
+    fmt.Println("Ensuring index for elastic")
 	ensureIndex(&ctx, elastic)
+    fmt.Println("Index done")
 
 	for {
 		message := getNextInQueue(pq)
@@ -76,14 +78,16 @@ func main() {
 
 func getNextInQueue(client *redis.Client) string {
 	for {
-		val, err := client.BLPop(30*time.Second, "pending").Result()
+		fmt.Println("Trying to retrieve message")
+        val, err := client.BLPop(30*time.Second, "pending").Result()
 		if err == redis.Nil {
+            fmt.Println("No message in queue")
 			continue
 		} else if err != nil {
 			log.Fatal(err)
 			time.Sleep(10 * time.Second)
 			continue
-		} else {
+        } else {
 			return val[1]
 		}
 	}
@@ -137,37 +141,40 @@ func getConnections() (*redis.Client, *elastic.Client, *mgo.Session) {
 	fmt.Println("elastic url: " + elasticUrl)
 	fmt.Println("mongo url: " + mongoUrl)
 
+    mongoPw := os.Getenv("mongo-pw")
+	mongoUser := os.Getenv("mongo-user")
+
+	fmt.Println("mongo credentials: " + mongoUser + " " + mongoPw)
+
 	pqClient := redis.NewClient(&redis.Options{
 		Addr:     pqUrl + ":6379",
 		Password: "",
 		DB:       0,
 	})
 
-	elasticClient, err := elastic.NewClient(
-		elastic.SetURL(elasticUrl+":9200"),
+    fmt.Println("Redis connection established")
+
+    elasticClient, err := elastic.NewClient(
+        elastic.SetURL("http://"+elasticUrl+":9200"),
 		elastic.SetSniff(false),
 	)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	mongoPw := os.Getenv("mongo-pw")
-	mongoUser := os.Getenv("mongo-user")
-
-	fmt.Println("Mongo credentials: " + mongoUser + " " + mongoPw)
+    fmt.Println("Elastic connection established")
 
 	mongoClient, err := mgo.DialWithInfo(&mgo.DialInfo{
-		Addrs:    []string{mongoUrl + ":27017"},
+        Addrs:    []string{mongoUrl + ":27017"},
 		Username: mongoUser,
 		Password: mongoPw,
-		// Database: Database,
-		// DialServer: func(addr *mgo.ServerAddr) (net.Conn, error) {
-		// 	return tls.Dial("tcp", addr.String(), &tls.Config{})
-		// },
+		//Database: "news",
 	})
 	if err != nil {
 		log.Fatal(err)
 	}
+
+    fmt.Println("Mongo connection established")
 
 	return pqClient, elasticClient, mongoClient
 }

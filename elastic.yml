@@ -34,16 +34,18 @@ spec:
             - name: cluster.name
               value: elastic-cluster
             - name: bootstrap.memory_lock
-              value: true            
+              value: "true"            
             - name: ES_JAVA_OPTS
-              value: "-Xms512m -Xmx512m"
+              value: -Xms512m -Xmx512m
+            - name: discovery.type
+              value: single-node
             ports:
             - containerPort: 9200
             volumeMounts:
             - mountPath: /usr/share/elasticsearch/data/
               name: elastic-volume
               readOnly: false
-
+          
           volumes:
           - name: elastic-volume
             hostPath:

@@ -30,6 +30,7 @@ spec:
           containers:
           - name: processor
             image: moritzgoeckel/news-service:processor
+            imagePullPolicy: Always
             env:
             - name: pq-redis-url
               value: pq-redis.default.svc.cluster.local
