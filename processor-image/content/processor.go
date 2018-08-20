@@ -64,9 +64,9 @@ func main() {
 	pq, elastic, mongo := getConnections()
 	//defer mongo.Close()
 
-    fmt.Println("Ensuring index for elastic")
+	fmt.Println("Ensuring index for elastic")
 	ensureIndex(&ctx, elastic)
-    fmt.Println("Index done")
+	fmt.Println("Index done")
 
 	for {
 		message := getNextInQueue(pq)
@@ -79,15 +79,15 @@ func main() {
 func getNextInQueue(client *redis.Client) string {
 	for {
 		fmt.Println("Trying to retrieve message")
-        val, err := client.BLPop(30*time.Second, "pending").Result()
+		val, err := client.BLPop(30*time.Second, "pending").Result()
 		if err == redis.Nil {
-            fmt.Println("No message in queue")
+			fmt.Println("No message in queue")
 			continue
 		} else if err != nil {
 			log.Fatal(err)
 			time.Sleep(10 * time.Second)
 			continue
-        } else {
+		} else {
 			return val[1]
 		}
 	}
@@ -141,12 +141,12 @@ func getConnections() (*redis.Client, *elastic.Client, *mgo.Session) {
 	fmt.Println("elastic url: " + elasticUrl)
 	fmt.Println("mongo url: " + mongoUrl)
 
-    mongoPw := os.Getenv("mongo-pw")
+	mongoPw := os.Getenv("mongo-pw")
 	mongoUser := os.Getenv("mongo-user")
 
 	fmt.Println("mongo credentials: " + mongoUser + " " + mongoPw)
 
-    fmt.Println("Connecting to redis...")
+	fmt.Println("Connecting to redis...")
 
 	pqClient := redis.NewClient(&redis.Options{
 		Addr:     pqUrl + ":6379",
@@ -154,22 +154,22 @@ func getConnections() (*redis.Client, *elastic.Client, *mgo.Session) {
 		DB:       0,
 	})
 
-    fmt.Println("Redis connection established")
-    fmt.Println("Connecting to elastic...")
+	fmt.Println("Redis connection established")
+	fmt.Println("Connecting to elastic...")
 
-    elasticClient, err := elastic.NewClient(
-        elastic.SetURL("http://"+elasticUrl+":9200"),
+	elasticClient, err := elastic.NewClient(
+		elastic.SetURL("http://"+elasticUrl+":9200"),
 		elastic.SetSniff(false),
 	)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-    fmt.Println("Elastic connection established")
-    fmt.Println("Connecting to mongo...")
+	fmt.Println("Elastic connection established")
+	fmt.Println("Connecting to mongo...")
 
 	mongoClient, err := mgo.DialWithInfo(&mgo.DialInfo{
-        Addrs:    []string{mongoUrl + ":27017"},
+		Addrs:    []string{mongoUrl + ":27017"},
 		Username: mongoUser,
 		Password: mongoPw,
 	})
@@ -177,7 +177,7 @@ func getConnections() (*redis.Client, *elastic.Client, *mgo.Session) {
 		log.Fatal(err)
 	}
 
-    fmt.Println("Mongo connection established")
+	fmt.Println("Mongo connection established")
 
 	return pqClient, elasticClient, mongoClient
 }
