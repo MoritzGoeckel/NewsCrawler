@@ -58,32 +58,32 @@ func main() {
 func index(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Request on the index endpoint")
 	type response struct {
-		status  string
-		version int
+		Status  string
+		Version int
 	}
 
-    resp := response{status: "working", version: 0}
+	resp := response{Status: "working", Version: 0}
 
-    js, err := json.Marshal(resp)
-    if err != nil {
+	js, err := json.Marshal(resp)
+	if err != nil {
 		log.Fatal(err)
 	}
 
-    w.Header().Set("Content-Type", "application/json")
-    w.Write(js)
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(js)
 }
 
 func mongoArticlesEndpoint(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Request on the mongo endpoint")
-    result := searchMongo(mongoClient)
+	result := searchMongo(mongoClient)
 
-    js, err := json.Marshal(result)
-    if err != nil {
+	js, err := json.Marshal(result)
+	if err != nil {
 		log.Fatal(err)
 	}
 
-    w.Header().Set("Content-Type", "application/json")
-    w.Write(js)
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(js)
 }
 
 func elasticArticlesEndpoint(w http.ResponseWriter, r *http.Request) {
@@ -92,13 +92,15 @@ func elasticArticlesEndpoint(w http.ResponseWriter, r *http.Request) {
 	query := vars["query"]
 	result := searchDocument(elasticClient, query)
 
-    js, err := json.Marshal(result)
-    if err != nil {
+	//TODO: Does not work, returns null
+
+	js, err := json.Marshal(result)
+	if err != nil {
 		log.Fatal(err)
 	}
 
-    w.Header().Set("Content-Type", "application/json")
-    w.Write(js)
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(js)
 }
 
 /*func getCache(client *redis.Client) {
@@ -129,9 +131,9 @@ func searchDocument(client *elastic.Client, query string) []jsonArticle {
 		Index("articles").
 		Query(termQuery).
 		Sort("time", true).
-		From(0).Size(10).   // take documents 0-9
-		Pretty(false).       // pretty print request and response JSON
-		Do(ctx)             // execute
+		From(0).Size(10). // take documents 0-9
+		Pretty(false).    // pretty print request and response JSON
+		Do(ctx)           // execute
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -143,8 +145,8 @@ func searchDocument(client *elastic.Client, query string) []jsonArticle {
 	var ttyp jsonArticle
 	for _, item := range searchResult.Each(reflect.TypeOf(ttyp)) {
 		t := item.(jsonArticle)
-        fmt.Println("Found: " + t.Headline)
-        articles = append(articles, t)
+		fmt.Println("Found: " + t.Headline)
+		articles = append(articles, t)
 	}
 
 	return articles
