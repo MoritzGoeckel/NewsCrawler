@@ -32,7 +32,18 @@ spec:
             image: moritzgoeckel/news-service:api-server 
             ports:
             - containerPort: 80
-
+            imagePullPolicy: Always
+            env:
+            - name: cache-redis-url
+              value: cache-redis.default.svc.cluster.local
+            - name: mongo-url
+              value: mongodb.default.svc.cluster.local
+            - name: mongo-user
+              value: root
+            - name: mongo-pw
+              value: thepw
+            - name: elastic-url
+              value: elastic.default.svc.cluster.local
 ---
 
 apiVersion: v1
