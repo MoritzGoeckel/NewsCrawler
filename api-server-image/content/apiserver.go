@@ -46,6 +46,7 @@ func main() {
 	router.HandleFunc("/", index)
 	router.HandleFunc("/mongo_articles", mongoArticlesEndpoint)
 	router.HandleFunc("/elastic_articles/{query}", elasticArticlesEndpoint)
+    //Set Endpoint without query to get everything
 
 	fmt.Println("Starting http server")
 	log.Fatal(http.ListenAndServe(":80", router))
@@ -138,7 +139,9 @@ func searchDocument(client *elastic.Client, query string) []jsonArticle {
 		log.Fatal(err)
 	}
 
-	fmt.Printf("Query took %d milliseconds\n", searchResult.TookInMillis)
+	fmt.Printf("Query took %d milliseconds and resulted in %d\n",
+		searchResult.TookInMillis,
+		searchResult.TotalHits())
 
 	var articles []jsonArticle
 

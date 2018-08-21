@@ -123,7 +123,7 @@ func insertIntoElastic(article jsonArticle, ctx *context.Context, client *elasti
 	put1, err := client.Index().
 		Index("articles").
 		Type("article").
-		Id("1"). //How to assign an id automatically?
+		// Id("1"). //How to assign an id automatically?
 		BodyJson(article).
 		Do(*ctx)
 	if err != nil {
