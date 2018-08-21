@@ -130,10 +130,10 @@ func searchDocument(client *elastic.Client, query string) []jsonArticle {
 	searchResult, err := client.Search().
 		Index("articles").
 		Query(termQuery).
-		Sort("time", true).
-		From(0).Size(10). // take documents 0-9
-		Pretty(false).    // pretty print request and response JSON
-		Do(ctx)           // execute
+		//Sort("time", true).
+		//From(0).Size(10). // take documents 0-9
+		//Pretty(false).    // pretty print request and response JSON
+		Do(ctx) // execute
 	if err != nil {
 		log.Fatal(err)
 	}
