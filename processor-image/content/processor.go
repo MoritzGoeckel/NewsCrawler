@@ -98,7 +98,7 @@ const elasticMapping = `
 				},
 				"url":{
 					"type":"text",
-					"store": true,
+					"store": true
 				},
 				"time":{
 					"type":"date"
