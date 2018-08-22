@@ -111,7 +111,7 @@ func setAlreadyGotThat(hash uint32, client *redis.Client) {
 }
 
 func getRedisConnections() (*redis.Client, *redis.Client, *redis.Client) {
-	agtUrl := os.Getenv("agt-redis-url")
+	agtUrl := os.Getenv("agt-article-redis-url")
 	pqUrl := os.Getenv("pq-redis-url")
 	lqUrl := os.Getenv("lq-redis-url")
 

@@ -14,8 +14,8 @@ spec:
           - name: downloader
             image: moritzgoeckel/news-service:downloader
             env:
-            - name: agt-redis-url
-              value: agt-redis.default.svc.cluster.local
+            - name: agt-link-redis-url
+              value: agt-link-redis.default.svc.cluster.local
             - name: pq-redis-url
               value: pq-redis.default.svc.cluster.local
             - name: lq-redis-url
