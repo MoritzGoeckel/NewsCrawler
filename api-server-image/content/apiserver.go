@@ -20,6 +20,7 @@ type bsonArticle struct {
 	Headline string    `bson:"headline"`
 	Content  string    `bson:"content"`
 	Source   string    `bson:"source"`
+	Url      string    `bson:"url"`
 	Time     time.Time `bson:"time"`
 }
 
@@ -27,6 +28,7 @@ type jsonArticle struct {
 	Headline string                `json:"headline"`
 	Content  string                `json:"content"`
 	Source   string                `json:"source"`
+	Url      string                `json:"url"`
 	Time     time.Time             `json:"time"`
 	Suggest  *elastic.SuggestField `json:"suggest_field,omitempty"`
 }
@@ -46,7 +48,7 @@ func main() {
 	router.HandleFunc("/", index)
 	router.HandleFunc("/mongo_articles", mongoArticlesEndpoint)
 	router.HandleFunc("/elastic_articles/{query}", elasticArticlesEndpoint)
-    //Set Endpoint without query to get everything
+	//Set Endpoint without query to get everything
 
 	fmt.Println("Starting http server")
 	log.Fatal(http.ListenAndServe(":80", router))
@@ -175,6 +177,10 @@ func getConnections() (*redis.Client, *elastic.Client, *mgo.Session) {
 	cacheUrl := os.Getenv("cache-redis-url")
 	elasticUrl := os.Getenv("elastic-url")
 	mongoUrl := os.Getenv("mongo-url")
+
+	if elasticUrl == "" || cacheUrl == "" || mongoUrl == "" {
+		log.Fatal("Enviroment variables not set")
+	}
 
 	fmt.Println("cache url: " + cacheUrl)
 	fmt.Println("elastic url: " + elasticUrl)

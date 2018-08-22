@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
 	"os"
@@ -12,10 +13,19 @@ import (
 	"gopkg.in/mgo.v2"
 )
 
+type article struct {
+	Headline string
+	Content  string
+	Source   string
+	Url      string
+	Time     time.Time
+}
+
 type bsonArticle struct {
 	Headline string    `bson:"headline"`
 	Content  string    `bson:"content"`
 	Source   string    `bson:"source"`
+	Url      string    `bson:"url"`
 	Time     time.Time `bson:"time"`
 }
 
@@ -23,6 +33,7 @@ type jsonArticle struct {
 	Headline string                `json:"headline"`
 	Content  string                `json:"content"`
 	Source   string                `json:"source"`
+	Url      string                `json:"url"`
 	Time     time.Time             `json:"time"`
 	Suggest  *elastic.SuggestField `json:"suggest_field,omitempty"`
 }
@@ -45,6 +56,10 @@ const elasticMapping = `
 					"type":"text",
 					"store": true,
 					"fielddata": true
+				},
+				"url":{
+					"type":"text",
+					"store": true,
 				},
 				"time":{
 					"type":"date"
@@ -70,9 +85,16 @@ func main() {
 
 	for {
 		message := getNextInQueue(pq)
+
+		var a article
+		err := json.Unmarshal([]byte(message), &a)
+		if err != nil {
+			log.Fatal(err)
+		}
+
 		fmt.Println("Processing message: " + message)
-		insertIntoMongo(bsonArticle{Headline: message, Content: "NOTSET", Source: "NOTSET", Time: time.Now()}, mongo)
-		insertIntoElastic(jsonArticle{Headline: message, Content: "NOTSET", Source: "NOTSET", Time: time.Now()}, &ctx, elastic)
+		insertIntoMongo(bsonArticle{Headline: a.Headline, Content: a.Content, Source: a.Source, Time: a.Time, Url: a.Url}, mongo)
+		insertIntoElastic(jsonArticle{Headline: a.Headline, Content: a.Content, Source: a.Source, Time: a.Time, Url: a.Url}, &ctx, elastic)
 	}
 }
 
@@ -136,6 +158,10 @@ func getConnections() (*redis.Client, *elastic.Client, *mgo.Session) {
 	pqUrl := os.Getenv("pq-redis-url")
 	elasticUrl := os.Getenv("elastic-url")
 	mongoUrl := os.Getenv("mongo-url")
+
+	if elasticUrl == "" || pqUrl == "" || mongoUrl == "" {
+		log.Fatal("Enviroment variables not set")
+	}
 
 	fmt.Println("pq url: " + pqUrl)
 	fmt.Println("elastic url: " + elasticUrl)
