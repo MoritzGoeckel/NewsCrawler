@@ -1,0 +1,67 @@
+apiVersion: apps/v1
+
+kind: Deployment
+
+metadata:
+    name: agt-article-redis
+
+spec:
+    replicas: 1
+
+    selector:
+        matchLabels:
+            app: agt-article-redis
+
+    strategy:
+      type: RollingUpdate
+      rollingUpdate:
+        maxUnavailable: 1
+        maxSurge: 1
+
+    template:
+        metadata:
+            labels:
+                app: agt-article-redis
+                tier: backend
+                persistance: non-disposable
+                project: news
+
+        spec:
+          containers:
+          - name: agt-article-redis
+            image: redis
+            ports:
+            - containerPort: 6379
+            volumeMounts:
+            - mountPath: /data/
+              name: agt-article-redis-volume
+              readOnly: false
+
+          volumes:
+          - name: agt-article-redis-volume
+            hostPath:
+                path: /home/docker/data/agt-article-redis-volume/
+                type: DirectoryOrCreate
+---
+apiVersion: v1
+
+kind: Service
+
+metadata:
+    name: agt-article-redis
+    namespace: default
+    labels:
+        project: news
+        tier: backend
+        app: agt-article-redis
+
+spec:
+    type: ClusterIP
+    ports:
+      - port: 6379 
+        targetPort: 6379
+        protocol: TCP
+    selector:
+        app: agt-article-redis
+
+# agt-article-redis.default.svc.cluster.local

@@ -13,29 +13,68 @@ import (
 	"gopkg.in/mgo.v2"
 )
 
-type article struct {
-	Headline string
-	Content  string
-	Source   string
-	Url      string
-	Time     time.Time
+func main() {
+	fmt.Println("Processor version 0.02")
+
+	ctx := context.Background()
+	pq, elastic, mongo := getConnections()
+	defer mongo.Close()
+
+	fmt.Println("Ensuring index for elastic")
+	ensureIndex(&ctx, elastic)
+
+	for {
+		message := getNextInQueue(pq)
+
+		var a Article
+		err := json.Unmarshal([]byte(message), &a)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		fmt.Println("Processing message: " + message)
+		insertIntoMongo(BsonArticle{Headline: a.Headline, Content: a.Content, Source: a.Source, Time: a.Time, Url: a.Url}, mongo)
+		insertIntoElastic(JsonArticle{Headline: a.Headline, Content: a.Content, Source: a.Source, Time: a.Time, Url: a.Url}, &ctx, elastic)
+	}
 }
 
-type bsonArticle struct {
-	Headline string    `bson:"headline"`
-	Content  string    `bson:"content"`
-	Source   string    `bson:"source"`
-	Url      string    `bson:"url"`
-	Time     time.Time `bson:"time"`
+func getNextInQueue(client *redis.Client) string {
+	for {
+		fmt.Println("Trying to retrieve message")
+		val, err := client.BLPop(30*time.Second, "pending").Result()
+		if err == redis.Nil {
+			fmt.Println("No message in queue")
+			continue
+		} else if err != nil {
+			log.Fatal(err)
+			time.Sleep(10 * time.Second)
+			continue
+		} else {
+			return val[1]
+		}
+	}
 }
 
-type jsonArticle struct {
-	Headline string                `json:"headline"`
-	Content  string                `json:"content"`
-	Source   string                `json:"source"`
-	Url      string                `json:"url"`
-	Time     time.Time             `json:"time"`
-	Suggest  *elastic.SuggestField `json:"suggest_field,omitempty"`
+func insertIntoMongo(data BsonArticle, mongo *mgo.Session) {
+	collection := mongo.DB("news").C("articles")
+
+	err := collection.Insert(data)
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func insertIntoElastic(article JsonArticle, ctx *context.Context, client *elastic.Client) {
+	put1, err := client.Index().
+		Index("articles").
+		Type("article").
+		// Id("1"). //How to assign an id automatically?
+		BodyJson(article).
+		Do(*ctx)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Printf("Indexed Article %s to index %s, type %s\n", put1.Id, put1.Index, put1.Type)
 }
 
 const elasticMapping = `
@@ -72,58 +111,6 @@ const elasticMapping = `
 	}
 }`
 
-func main() {
-	fmt.Println("Processor version 0.02")
-
-	ctx := context.Background()
-	pq, elastic, mongo := getConnections()
-	//defer mongo.Close()
-
-	fmt.Println("Ensuring index for elastic")
-	ensureIndex(&ctx, elastic)
-	fmt.Println("Index done")
-
-	for {
-		message := getNextInQueue(pq)
-
-		var a article
-		err := json.Unmarshal([]byte(message), &a)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		fmt.Println("Processing message: " + message)
-		insertIntoMongo(bsonArticle{Headline: a.Headline, Content: a.Content, Source: a.Source, Time: a.Time, Url: a.Url}, mongo)
-		insertIntoElastic(jsonArticle{Headline: a.Headline, Content: a.Content, Source: a.Source, Time: a.Time, Url: a.Url}, &ctx, elastic)
-	}
-}
-
-func getNextInQueue(client *redis.Client) string {
-	for {
-		fmt.Println("Trying to retrieve message")
-		val, err := client.BLPop(30*time.Second, "pending").Result()
-		if err == redis.Nil {
-			fmt.Println("No message in queue")
-			continue
-		} else if err != nil {
-			log.Fatal(err)
-			time.Sleep(10 * time.Second)
-			continue
-		} else {
-			return val[1]
-		}
-	}
-}
-
-func insertIntoMongo(data bsonArticle, mongo *mgo.Session) {
-	collection := mongo.DB("news").C("articles")
-
-	err := collection.Insert(data)
-	if err != nil {
-		log.Fatal(err)
-	}
-}
-
 func ensureIndex(ctx *context.Context, client *elastic.Client) {
 	exists, err := client.IndexExists("twitter").Do(*ctx)
 	if err != nil {
@@ -138,20 +125,6 @@ func ensureIndex(ctx *context.Context, client *elastic.Client) {
 			log.Fatal("Surprise: Index not acknowledged!")
 		}
 	}
-}
-
-// https://olivere.github.io/elastic/
-func insertIntoElastic(article jsonArticle, ctx *context.Context, client *elastic.Client) {
-	put1, err := client.Index().
-		Index("articles").
-		Type("article").
-		// Id("1"). //How to assign an id automatically?
-		BodyJson(article).
-		Do(*ctx)
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Printf("Indexed Article %s to index %s, type %s\n", put1.Id, put1.Index, put1.Type)
 }
 
 func getConnections() (*redis.Client, *elastic.Client, *mgo.Session) {

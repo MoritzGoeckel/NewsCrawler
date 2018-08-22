@@ -3,14 +3,14 @@ apiVersion: apps/v1
 kind: Deployment
 
 metadata:
-    name: agt-redis
+    name: agt-link-redis
 
 spec:
     replicas: 1
 
     selector:
         matchLabels:
-            app: agt-redis
+            app: agt-link-redis
 
     strategy:
       type: RollingUpdate
@@ -21,26 +21,26 @@ spec:
     template:
         metadata:
             labels:
-                app: agt-redis
+                app: agt-link-redis
                 tier: backend
                 persistance: non-disposable
                 project: news
 
         spec:
           containers:
-          - name: agt-redis
+          - name: agt-link-redis
             image: redis
             ports:
             - containerPort: 6379
             volumeMounts:
             - mountPath: /data/
-              name: agt-redis-volume
+              name: agt-link-redis-volume
               readOnly: false
 
           volumes:
-          - name: agt-redis-volume
+          - name: agt-link-redis-volume
             hostPath:
-                path: /home/docker/data/agt-redis-volume/
+                path: /home/docker/data/agt-link-redis-volume/
                 type: DirectoryOrCreate
 ---
 apiVersion: v1
@@ -48,12 +48,12 @@ apiVersion: v1
 kind: Service
 
 metadata:
-    name: agt-redis
+    name: agt-link-redis
     namespace: default
     labels:
         project: news
         tier: backend
-        app: agt-redis
+        app: agt-link-redis
 
 spec:
     type: ClusterIP
@@ -62,6 +62,6 @@ spec:
         targetPort: 6379
         protocol: TCP
     selector:
-        app: agt-redis
+        app: agt-link-redis
 
-# agt-redis.default.svc.cluster.local
+# agt-link-redis.default.svc.cluster.local

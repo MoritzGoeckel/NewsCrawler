@@ -1,0 +1,67 @@
+apiVersion: apps/v1
+
+kind: Deployment
+
+metadata:
+    name: lq-redis
+
+spec:
+    replicas: 1
+
+    selector:
+        matchLabels:
+            app: lq-redis
+
+    strategy:
+      type: RollingUpdate
+      rollingUpdate:
+        maxUnavailable: 1
+        maxSurge: 1
+
+    template:
+        metadata:
+            labels:
+                app: lq-redis
+                tier: backend
+                persistance: non-disposable
+                project: news
+
+        spec:
+          containers:
+          - name: lq-redis
+            image: redis
+            ports:
+            - containerPort: 6379
+            volumeMounts:
+            - mountPath: /data/
+              name: lq-redis-volume
+              readOnly: false
+
+          volumes:
+          - name: lq-redis-volume
+            hostPath:
+                path: /home/docker/data/lq-redis-volume/
+                type: DirectoryOrCreate
+---
+apiVersion: v1
+
+kind: Service
+
+metadata:
+    name: lq-redis
+    namespace: default
+    labels:
+        project: news
+        tier: backend
+        app: lq-redis
+
+spec:
+    type: ClusterIP
+    ports:
+      - port: 6379 
+        targetPort: 6379
+        protocol: TCP
+    selector:
+        app: lq-redis
+
+# lq-redis.default.svc.cluster.local

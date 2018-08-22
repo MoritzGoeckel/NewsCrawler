@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+
+kind: Deployment
+
+metadata:
+    name: article-downloader
+
+spec:
+    replicas: 1
+
+    selector:
+        matchLabels:
+            app: article-downloader
+
+    strategy:
+      type: RollingUpdate
+      rollingUpdate:
+        maxUnavailable: 1
+        maxSurge: 1
+
+    template:
+        metadata:
+            labels:
+                app: article-downloader
+                tier: backend
+                persistance: disposable
+                project: news
+
+        spec:
+          containers:
+          - name: article-downloader
+            image: moritzgoeckel/news-service:article-downloader
+            imagePullPolicy: Always
+            env:
+            - name: agt-article-redis-url
+              value: agt-article-redis.default.svc.cluster.local
+            - name: lq-redis-url
+              value: lq-redis.default.svc.cluster.local
+            - name: pq-redis-url
+              value: pq-redis.default.svc.cluster.local

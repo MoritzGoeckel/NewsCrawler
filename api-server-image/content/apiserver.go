@@ -8,30 +8,12 @@ import (
 	"net/http"
 	"os"
 	"reflect"
-	"time"
 
 	"github.com/go-redis/redis"
 	"github.com/gorilla/mux"
 	"github.com/olivere/elastic"
 	mgo "gopkg.in/mgo.v2"
 )
-
-type bsonArticle struct {
-	Headline string    `bson:"headline"`
-	Content  string    `bson:"content"`
-	Source   string    `bson:"source"`
-	Url      string    `bson:"url"`
-	Time     time.Time `bson:"time"`
-}
-
-type jsonArticle struct {
-	Headline string                `json:"headline"`
-	Content  string                `json:"content"`
-	Source   string                `json:"source"`
-	Url      string                `json:"url"`
-	Time     time.Time             `json:"time"`
-	Suggest  *elastic.SuggestField `json:"suggest_field,omitempty"`
-}
 
 var cacheClient *redis.Client
 var elasticClient *elastic.Client
@@ -126,7 +108,7 @@ func setCache(client *redis.Client) {
 	}
 }*/
 
-func searchDocument(client *elastic.Client, query string) []jsonArticle {
+func searchDocument(client *elastic.Client, query string) []JsonArticle {
 	fmt.Println("Searching in elastic for: " + query)
 	ctx := context.Background()
 	termQuery := elastic.NewTermQuery("headline", query)
@@ -145,11 +127,11 @@ func searchDocument(client *elastic.Client, query string) []jsonArticle {
 		searchResult.TookInMillis,
 		searchResult.TotalHits())
 
-	var articles []jsonArticle
+	var articles []JsonArticle
 
-	var ttyp jsonArticle
+	var ttyp JsonArticle
 	for _, item := range searchResult.Each(reflect.TypeOf(ttyp)) {
-		t := item.(jsonArticle)
+		t := item.(JsonArticle)
 		fmt.Println("Found: " + t.Headline)
 		articles = append(articles, t)
 	}
@@ -157,12 +139,12 @@ func searchDocument(client *elastic.Client, query string) []jsonArticle {
 	return articles
 }
 
-func searchMongo(client *mgo.Session) []bsonArticle {
+func searchMongo(client *mgo.Session) []BsonArticle {
 	fmt.Println("Listing mongodb")
 
 	coll := client.DB("news").C("articles")
 
-	var all []bsonArticle
+	var all []BsonArticle
 	err := coll.Find(nil).All(&all)
 	if err != nil {
 		log.Fatal(err)
