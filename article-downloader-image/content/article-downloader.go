@@ -31,25 +31,29 @@ func main() {
 
 func downloadArticle(link Link, agt *redis.Client, pq *redis.Client) {
 	doc := GetHTML(link.Url)
-	article := GetArticle(doc)
+	article, isSufficient := GetArticle(doc)
 
-	article.Source = link.Source
+	if isSufficient {
+		article.Source = link.Source
 
-	h := hashArticle(article)
-	pushed := false
+		h := hashArticle(article)
+		pushed := false
 
-	data, err := json.Marshal(article)
-	if err != nil {
-		log.Fatal(err)
+		data, err := json.Marshal(article)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		if !alreadyGotThat(h, agt) {
+			setAlreadyGotThat(h, agt)
+			pushNewEntry(string(data), pq)
+			pushed = true
+		}
+
+		fmt.Println("New: " + fmt.Sprint(pushed) + "\t" + fmt.Sprint(h) + "\t" + article.Headline)
+	} else {
+		fmt.Println("Article has not enough data points")
 	}
-
-	if !alreadyGotThat(h, agt) {
-		setAlreadyGotThat(h, agt)
-		pushNewEntry(string(data), pq)
-		pushed = true
-	}
-
-	fmt.Println("New: " + fmt.Sprint(pushed) + "\t" + fmt.Sprint(h) + "\t" + article.Headline)
 }
 
 func getNextInQueue(client *redis.Client) string {

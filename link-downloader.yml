@@ -4,7 +4,7 @@ metadata:
   name: link-downloader
 spec:
   startingDeadlineSeconds: 3000
-  schedule: "*/2 * * * *"
+  schedule: "*/10 * * * *"
   concurrencyPolicy: Replace
   jobTemplate:
     spec:
