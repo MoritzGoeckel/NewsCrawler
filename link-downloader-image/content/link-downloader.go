@@ -34,6 +34,8 @@ func downloadSource(s Source, agt *redis.Client, lq *redis.Client) {
 			fmt.Print("\r\n")
 		} else {
 			for _, link := range links {
+				link.Source = s.Id
+
 				h := hashLink(link)
 				pushed := false
 
