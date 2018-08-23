@@ -65,7 +65,7 @@ func getHTML(url string) (*goquery.Document, error) {
 
 	defer res.Body.Close()
 	if res.StatusCode != 200 {
-		return nil, errors.New("Status code error: " + fmt.Sprint(res.StatusCode) + " " + fmt.Sprint(res.Status) + "%s")
+		return nil, errors.New("Status code error: " + fmt.Sprint(res.StatusCode) + " " + fmt.Sprint(res.Status))
 	}
 
 	doc, err := goquery.NewDocumentFromReader(res.Body)

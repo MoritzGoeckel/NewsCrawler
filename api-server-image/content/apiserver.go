@@ -77,8 +77,6 @@ func elasticArticlesEndpoint(w http.ResponseWriter, r *http.Request) {
 	query := vars["query"]
 	result := searchDocument(elasticClient, query)
 
-	//TODO: Does not work, returns null
-
 	js, err := json.Marshal(result)
 	if err != nil {
 		log.Fatal(err)
@@ -116,9 +114,9 @@ func searchDocument(client *elastic.Client, query string) []JsonArticle {
 		Index("articles").
 		Query(termQuery).
 		//Sort("time", true).
-		//From(0).Size(10). // take documents 0-9
-		//Pretty(false).    // pretty print request and response JSON
-		Do(ctx) // execute
+		From(0).Size(10).
+		Pretty(false).
+		Do(ctx)
 	if err != nil {
 		log.Fatal(err)
 	}

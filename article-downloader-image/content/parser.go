@@ -31,28 +31,34 @@ func GetArticle(document *goquery.Document) (Article, error) {
 	article := Article{Time: time.Now()}
 
 	datapoints := 0
+	datapointsStr := ""
+
 	if og.Title != "" {
 		article.Headline = og.Title
+		datapointsStr += "Title "
 		datapoints++
 	}
 
 	if og.URL != "" {
 		article.Url = og.URL
+		datapointsStr += "URL "
 		datapoints++
 	}
 
 	if og.Description != "" {
 		article.Description = og.Description
+		datapointsStr += "Description "
 		datapoints++
 	}
 
 	if len(og.Images) != 0 && og.Images[0].URL != "" {
 		article.Image = og.Images[0].URL
+		datapointsStr += "Image "
 		datapoints++
 	}
 
 	if datapoints <= 2 {
-		return Article{}, errors.New("Not enough datapints: " + fmt.Sprint(datapoints))
+		return Article{}, errors.New("Not enough datapoints: " + fmt.Sprint(datapoints) + " -> " + datapointsStr)
 	}
 
 	return article, nil

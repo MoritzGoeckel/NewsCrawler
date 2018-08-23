@@ -29,7 +29,7 @@ func downloadSource(s Source, agt *redis.Client, lq *redis.Client) {
 	for _, url := range s.Urls {
 		links, err := GetLinks(url)
 		if err != nil {
-			fmt.Print("Warning: ")
+			fmt.Print("Warning: " + url + " -> ")
 			fmt.Print(err)
 			fmt.Print("\r\n")
 		} else {

@@ -33,8 +33,8 @@ func main() {
 		}
 
 		fmt.Println("Processing message: " + message)
-		insertIntoMongo(BsonArticle{Headline: a.Headline, Content: a.Content, Source: a.Source, Time: a.Time, Url: a.Url}, mongo)
-		insertIntoElastic(JsonArticle{Headline: a.Headline, Content: a.Content, Source: a.Source, Time: a.Time, Url: a.Url}, &ctx, elastic)
+		insertIntoMongo(BsonArticle{Headline: a.Headline, Description: a.Description, Image: a.Image, Content: a.Content, Source: a.Source, Time: a.Time, Url: a.Url}, mongo)
+		insertIntoElastic(JsonArticle{Headline: a.Headline, Description: a.Description, Image: a.Image, Content: a.Content, Source: a.Source, Time: a.Time, Url: a.Url}, &ctx, elastic)
 	}
 }
 

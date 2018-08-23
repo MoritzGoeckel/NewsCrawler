@@ -32,7 +32,7 @@ func main() {
 func downloadArticle(link Link, agt *redis.Client, pq *redis.Client) {
 	doc, err := GetHTML(link.Url)
 	if err != nil {
-		fmt.Print("Warning: ")
+		fmt.Print("Warning: " + link.Url + " -> ")
 		fmt.Print(err)
 		fmt.Print("\r\n")
 		return
@@ -40,7 +40,7 @@ func downloadArticle(link Link, agt *redis.Client, pq *redis.Client) {
 
 	article, err := GetArticle(doc)
 	if err != nil {
-		fmt.Print("Warning: ")
+		fmt.Print("Warning: " + link.Url + " -> ")
 		fmt.Print(err)
 		fmt.Print("\r\n")
 		return
@@ -72,10 +72,10 @@ func downloadArticle(link Link, agt *redis.Client, pq *redis.Client) {
 
 func getNextInQueue(client *redis.Client) string {
 	for {
-		fmt.Println("Trying to retrieve message")
+		fmt.Println("Trying to retrieve message") //Maybe should not log that
 		val, err := client.BLPop(30*time.Second, "pending").Result()
 		if err == redis.Nil {
-			fmt.Println("No message in queue")
+			fmt.Println("No message in queue") //Maybe should not log that
 			continue
 		} else if err != nil {
 			log.Fatal(err)
