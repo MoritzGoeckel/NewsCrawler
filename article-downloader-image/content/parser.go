@@ -18,14 +18,14 @@ func GetArticle(document *goquery.Document) (Article, error) {
 
 	html, err := document.Html()
 	if err != nil {
-		return nil, err
+		return Article{}, err
 	}
 
 	og := opengraph.NewOpenGraph()
 
 	err = og.ProcessHTML(strings.NewReader(html))
 	if err != nil {
-		return nil, err
+		return Article{}, err
 	}
 
 	article := Article{Time: time.Now()}
@@ -52,7 +52,7 @@ func GetArticle(document *goquery.Document) (Article, error) {
 	}
 
 	if datapoints <= 2 {
-		return nil, errors.New("Not enough datapints: " + fmt.Sprint(datapoints))
+		return Article{}, errors.New("Not enough datapints: " + fmt.Sprint(datapoints))
 	}
 
 	return article, nil

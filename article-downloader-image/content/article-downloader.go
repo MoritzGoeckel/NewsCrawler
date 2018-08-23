@@ -62,7 +62,12 @@ func downloadArticle(link Link, agt *redis.Client, pq *redis.Client) {
 		pushed = true
 	}
 
-	fmt.Println((pushed ? "new" : "agt") + "\t" + article.Headline)
+	pushedStr := "agt"
+	if pushed {
+		pushedStr = "new"
+	}
+
+	fmt.Println(pushedStr + "\t" + article.Headline)
 }
 
 func getNextInQueue(client *redis.Client) string {
