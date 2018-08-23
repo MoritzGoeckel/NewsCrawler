@@ -30,6 +30,7 @@ spec:
           containers:
           - name:  api-server
             image: moritzgoeckel/news-service:api-server 
+            imagePullPolicy: Always
             ports:
             - containerPort: 80
             imagePullPolicy: Always

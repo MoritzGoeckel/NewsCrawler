@@ -13,7 +13,7 @@ import (
 )
 
 func main() {
-	fmt.Println("Downloader version 0.02")
+	fmt.Println("Link downloader version 0.02")
 
 	sources := readSources()
 	agt, lq := getRedisConnections()
@@ -27,24 +27,29 @@ func main() {
 
 func downloadSource(s Source, agt *redis.Client, lq *redis.Client) {
 	for _, url := range s.Urls {
-		links := GetLinks(url)
+		links, err := GetLinks(url)
+		if err != nil {
+			fmt.Print("Warning: ")
+			fmt.Print(err)
+			fmt.Print("\r\n")
+		} else {
+			for _, link := range links {
+				h := hashLink(link)
+				pushed := false
 
-		for _, link := range links {
-			h := hashLink(link)
-			pushed := false
+				data, err := json.Marshal(link)
+				if err != nil {
+					log.Fatal(err)
+				}
 
-			data, err := json.Marshal(link)
-			if err != nil {
-				log.Fatal(err)
+				if !alreadyGotThat(h, agt) {
+					setAlreadyGotThat(h, agt)
+					pushNewEntry(string(data), lq)
+					pushed = true
+				}
+
+				fmt.Println("New: " + fmt.Sprint(pushed) + "\t" + fmt.Sprint(h) + "\t" + link.Url)
 			}
-
-			if !alreadyGotThat(h, agt) {
-				setAlreadyGotThat(h, agt)
-				pushNewEntry(string(data), lq)
-				pushed = true
-			}
-
-			fmt.Println("New: " + fmt.Sprint(pushed) + "\t" + fmt.Sprint(h) + "\t" + link.Url)
 		}
 	}
 }

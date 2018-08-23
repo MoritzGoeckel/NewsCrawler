@@ -12,12 +12,11 @@ spec:
         spec:
           containers:
           - name: downloader
-            image: moritzgoeckel/news-service:downloader
+            image: moritzgoeckel/news-service:link-downloader
+            imagePullPolicy: Always
             env:
             - name: agt-link-redis-url
               value: agt-link-redis.default.svc.cluster.local
-            - name: pq-redis-url
-              value: pq-redis.default.svc.cluster.local
             - name: lq-redis-url
               value: lq-redis.default.svc.cluster.local
           restartPolicy: OnFailure

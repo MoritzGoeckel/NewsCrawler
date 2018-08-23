@@ -30,30 +30,39 @@ func main() {
 }
 
 func downloadArticle(link Link, agt *redis.Client, pq *redis.Client) {
-	doc := GetHTML(link.Url)
-	article, isSufficient := GetArticle(doc)
-
-	if isSufficient {
-		article.Source = link.Source
-
-		h := hashArticle(article)
-		pushed := false
-
-		data, err := json.Marshal(article)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		if !alreadyGotThat(h, agt) {
-			setAlreadyGotThat(h, agt)
-			pushNewEntry(string(data), pq)
-			pushed = true
-		}
-
-		fmt.Println("New: " + fmt.Sprint(pushed) + "\t" + fmt.Sprint(h) + "\t" + article.Headline)
-	} else {
-		fmt.Println("Article has not enough data points")
+	doc, err := GetHTML(link.Url)
+	if err != nil {
+		fmt.Print("Warning: ")
+		fmt.Print(err)
+		fmt.Print("\r\n")
+		return
 	}
+
+	article, err := GetArticle(doc)
+	if err != nil {
+		fmt.Print("Warning: ")
+		fmt.Print(err)
+		fmt.Print("\r\n")
+		return
+	}
+
+	article.Source = link.Source
+
+	h := hashArticle(article)
+	pushed := false
+
+	data, err := json.Marshal(article)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if !alreadyGotThat(h, agt) {
+		setAlreadyGotThat(h, agt)
+		pushNewEntry(string(data), pq)
+		pushed = true
+	}
+
+	fmt.Println((pushed ? "new" : "agt") + "\t" + article.Headline)
 }
 
 func getNextInQueue(client *redis.Client) string {

@@ -1,7 +1,8 @@
 package main
 
 import (
-	"log"
+	"errors"
+	"fmt"
 	"net/http"
 	"strings"
 	"time"
@@ -10,21 +11,21 @@ import (
 	"github.com/dyatlov/go-opengraph/opengraph"
 )
 
-func GetArticle(document *goquery.Document) (Article, bool) {
-	document.Find(".headline").Each(func(i int, selection *goquery.Selection) {
+func GetArticle(document *goquery.Document) (Article, error) {
+	/*document.Find(".headline").Each(func(i int, selection *goquery.Selection) {
 
-	})
+	})*/
 
 	html, err := document.Html()
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 
 	og := opengraph.NewOpenGraph()
 
 	err = og.ProcessHTML(strings.NewReader(html))
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 
 	article := Article{Time: time.Now()}
@@ -50,24 +51,28 @@ func GetArticle(document *goquery.Document) (Article, bool) {
 		datapoints++
 	}
 
-	return article, datapoints >= 2
+	if datapoints <= 2 {
+		return nil, errors.New("Not enough datapints: " + fmt.Sprint(datapoints))
+	}
+
+	return article, nil
 }
 
-func GetHTML(url string) *goquery.Document {
+func GetHTML(url string) (*goquery.Document, error) {
 	res, err := http.Get(url)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 
 	defer res.Body.Close()
 	if res.StatusCode != 200 {
-		log.Fatalf("status code error: %d %s", res.StatusCode, res.Status)
+		return nil, errors.New("Status code error: " + fmt.Sprint(res.StatusCode) + " " + fmt.Sprint(res.Status) + "%s")
 	}
 
 	doc, err := goquery.NewDocumentFromReader(res.Body)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 
-	return doc
+	return doc, nil
 }
