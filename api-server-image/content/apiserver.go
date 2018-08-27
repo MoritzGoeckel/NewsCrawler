@@ -8,10 +8,12 @@ import (
 	"net/http"
 	"os"
 	"reflect"
+	"time"
 
 	"github.com/go-redis/redis"
 	"github.com/gorilla/mux"
 	"github.com/olivere/elastic"
+	"github.com/vjeantet/jodaTime"
 	mgo "gopkg.in/mgo.v2"
 )
 
@@ -31,6 +33,8 @@ func main() {
 	router.HandleFunc("/mongo_articles", mongoArticlesEndpoint)
 	router.HandleFunc("/elastic_articles/{query}", elasticArticlesEndpoint)
 	router.HandleFunc("/number_articles/", numberArticlesEndpoint)
+	router.HandleFunc("/get_words/", getWordsEndpoint)
+	router.HandleFunc("/get_words_todate/", getWordsToDateEndpoint)
 	//Set Endpoint without query to get everything
 
 	fmt.Println("Starting http server")
@@ -46,9 +50,10 @@ func index(w http.ResponseWriter, r *http.Request) {
 	type response struct {
 		Status  string
 		Version int
+		Date    string
 	}
 
-	resp := response{Status: "working", Version: 0}
+	resp := response{Status: "working", Version: 0, Date: jodaTime.Format("YYYY.MM.dd", time.Now())}
 
 	js, err := json.Marshal(resp)
 	if err != nil {
@@ -103,6 +108,56 @@ func elasticArticlesEndpoint(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(js)
+}
+
+func getWordsEndpoint(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("Request on the words endpoint")
+	result := getWords(mongoClient)
+
+	js, err := json.Marshal(result)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(js)
+}
+
+func getWordsToDateEndpoint(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("Request on the words to date endpoint")
+	result := getWordsToDate(mongoClient)
+
+	js, err := json.Marshal(result)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(js)
+}
+
+func getWords(client *mgo.Session) []Word {
+	collection := client.DB("news").C("words")
+
+	var all []Word
+	err := collection.Find(nil).Sort("-count").Limit(30).All(&all)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return all
+}
+
+func getWordsToDate(client *mgo.Session) []WordToDate {
+	collection := client.DB("news").C("words_to_date")
+
+	var all []WordToDate
+	err := collection.Find(nil).Sort("-date", "-count").Limit(30).All(&all)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return all
 }
 
 /*func getCache(client *redis.Client) {

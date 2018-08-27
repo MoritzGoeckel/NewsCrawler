@@ -47,3 +47,14 @@ type Link struct {
 	Url    string
 	Source string
 }
+
+type Word struct {
+	Word  string
+	Count int
+}
+
+type WordToDate struct {
+	Word  string
+	Count int
+	Date  string
+}
