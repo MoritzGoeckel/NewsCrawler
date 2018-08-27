@@ -6,12 +6,17 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/go-redis/redis"
 	"github.com/olivere/elastic"
+	"github.com/vjeantet/jodaTime"
 	"gopkg.in/mgo.v2"
+	"gopkg.in/mgo.v2/bson"
 )
+
+var replaceArray []string
 
 func main() {
 	fmt.Println("Processor version 0.02")
@@ -33,8 +38,22 @@ func main() {
 		}
 
 		fmt.Println("Processing message: " + message)
+
+		fmt.Println("Inserting into Mongo")
 		insertIntoMongo(BsonArticle{Headline: a.Headline, Description: a.Description, Image: a.Image, Content: a.Content, Source: a.Source, Time: a.Time, Url: a.Url}, mongo)
+
+		fmt.Println("Inserting into elastic")
 		insertIntoElastic(JsonArticle{Headline: a.Headline, Description: a.Description, Image: a.Image, Content: a.Content, Source: a.Source, Time: a.Time, Url: a.Url}, &ctx, elastic)
+
+		fmt.Println("Gettings words")
+		words := getWords(a)
+		fmt.Print(words)
+
+		fmt.Println("Updating word count")
+		updateWordCount(words, mongo)
+
+		fmt.Println("Updating word count for to date")
+		updateWordCountToDate(words, mongo)
 	}
 }
 
@@ -53,6 +72,73 @@ func getNextInQueue(client *redis.Client) string {
 			return val[1]
 		}
 	}
+}
+
+func getWords(a Article) []string {
+	content := a.Headline + " " + a.Description + " " + a.Content
+
+	seperators := "!\"²³$%&/{()[]}=\\?´`+*~#'.:,;<>|^"
+	for _, sign := range seperators {
+		content = strings.Replace(content, string(sign), " ", -1)
+	}
+
+	words := strings.Fields(content)
+	for i, word := range words {
+		words[i] = strings.ToLower(word)
+	}
+
+	return words
+}
+
+func updateWordCount(words []string, mongo *mgo.Session) {
+	collection := mongo.DB("news").C("words")
+	bulk := collection.Bulk()
+
+	for _, word := range words {
+		count := 1
+
+		query := bson.M{"word": word}
+		change := bson.M{"$inc": bson.M{"count": count}, "$set": bson.M{"word": word}}
+
+		bulk.Upsert(query, change)
+	}
+
+	res, err := bulk.Run()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Print("Result: ")
+	fmt.Print(res)
+	fmt.Print("\r\n")
+}
+
+func updateWordCountToDate(words []string, mongo *mgo.Session) {
+	now := jodaTime.Format("YYYY.MM.dd", time.Now())
+
+	collection := mongo.DB("news").C("words_to_date")
+	bulk := collection.Bulk()
+
+	for _, word := range words {
+		count := 1
+
+		query := bson.M{"word": word, "date": now}
+		change := bson.M{"$inc": bson.M{"count": count}, "$set": bson.M{"word": word, "date": now}}
+
+		bulk.Upsert(query, change)
+	}
+
+	res, err := bulk.Run()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Print("Result: ")
+	fmt.Print(res)
+	fmt.Print("\r\n")
+
+	//Todo: Create some kind of cleanup for very seldom words every 24h
+	//Todo: Create worker who constructs the word cloud every now and then
 }
 
 func insertIntoMongo(data BsonArticle, mongo *mgo.Session) {
