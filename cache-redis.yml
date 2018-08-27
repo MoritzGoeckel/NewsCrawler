@@ -30,6 +30,7 @@ spec:
           containers:
           - name: cache-redis
             image: redis
+            args: ["--save", "900", "1", "--save", "300", "10"]
             ports:
             - containerPort: 6379
             volumeMounts:

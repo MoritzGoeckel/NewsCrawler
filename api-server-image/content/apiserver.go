@@ -30,6 +30,7 @@ func main() {
 	router.HandleFunc("/", index)
 	router.HandleFunc("/mongo_articles", mongoArticlesEndpoint)
 	router.HandleFunc("/elastic_articles/{query}", elasticArticlesEndpoint)
+	router.HandleFunc("/number_articles/", numberArticlesEndpoint)
 	//Set Endpoint without query to get everything
 
 	fmt.Println("Starting http server")
@@ -48,6 +49,24 @@ func index(w http.ResponseWriter, r *http.Request) {
 	}
 
 	resp := response{Status: "working", Version: 0}
+
+	js, err := json.Marshal(resp)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(js)
+}
+
+func numberArticlesEndpoint(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("Request on the numberArticles endpoint")
+
+	type response struct {
+		Documents int
+	}
+
+	resp := response{Documents: countMongo(mongoClient)}
 
 	js, err := json.Marshal(resp)
 	if err != nil {
@@ -113,7 +132,7 @@ func searchDocument(client *elastic.Client, query string) []JsonArticle {
 	searchResult, err := client.Search().
 		Index("articles").
 		Query(termQuery).
-		//Sort("time", true).
+		Sort("time", true).
 		From(0).Size(10).
 		Pretty(false).
 		Do(ctx)
@@ -137,13 +156,28 @@ func searchDocument(client *elastic.Client, query string) []JsonArticle {
 	return articles
 }
 
+func countMongo(client *mgo.Session) int {
+	fmt.Println("Counting mongodb")
+
+	coll := client.DB("news").C("articles")
+
+	result, err := coll.Count()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println("Found " + fmt.Sprint(result) + " documents")
+
+	return result
+}
+
 func searchMongo(client *mgo.Session) []BsonArticle {
 	fmt.Println("Listing mongodb")
 
 	coll := client.DB("news").C("articles")
 
 	var all []BsonArticle
-	err := coll.Find(nil).All(&all)
+	err := coll.Find(nil).Sort("time").Limit(10).All(&all)
 	if err != nil {
 		log.Fatal(err)
 	}
