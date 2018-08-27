@@ -1,7 +1,7 @@
 apiVersion: batch/v1beta1
 kind: CronJob
 metadata:
-  name: link-downloader
+  name: wordcloud-generator
 spec:
   startingDeadlineSeconds: 3000
   schedule: "0 * * * *" #*/30 * * * *
@@ -12,11 +12,13 @@ spec:
         spec:
           containers:
           - name: downloader
-            image: moritzgoeckel/news-service:link-downloader
+            image: moritzgoeckel/news-service:wordcloud-generator
             imagePullPolicy: Always
             env:
-            - name: agt-link-redis-url
-              value: agt-link-redis.default.svc.cluster.local
-            - name: lq-redis-url
-              value: lq-redis.default.svc.cluster.local
+            - name: mongo-url
+              value: mongodb.default.svc.cluster.local
+            - name: mongo-user
+              value: root
+            - name: mongo-pw
+              value: thepw
           restartPolicy: OnFailure

@@ -33,9 +33,9 @@ func main() {
 	router.HandleFunc("/mongo_articles", mongoArticlesEndpoint)
 	router.HandleFunc("/elastic_articles/{query}", elasticArticlesEndpoint)
 	router.HandleFunc("/number_articles/", numberArticlesEndpoint)
+	router.HandleFunc("/number_words/", numberWordsEndpoint)
 	router.HandleFunc("/get_words/", getWordsEndpoint)
 	router.HandleFunc("/get_words_todate/", getWordsToDateEndpoint)
-	//Set Endpoint without query to get everything
 
 	fmt.Println("Starting http server")
 	log.Fatal(http.ListenAndServe(":80", router))
@@ -54,6 +54,24 @@ func index(w http.ResponseWriter, r *http.Request) {
 	}
 
 	resp := response{Status: "working", Version: 0, Date: jodaTime.Format("YYYY.MM.dd", time.Now())}
+
+	js, err := json.Marshal(resp)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(js)
+}
+
+func numberWordsEndpoint(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("Request on the numberWords endpoint")
+
+	type response struct {
+		Words int
+	}
+
+	resp := response{Words: countMongoWords(mongoClient)}
 
 	js, err := json.Marshal(resp)
 	if err != nil {
@@ -215,6 +233,21 @@ func countMongo(client *mgo.Session) int {
 	fmt.Println("Counting mongodb")
 
 	coll := client.DB("news").C("articles")
+
+	result, err := coll.Count()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println("Found " + fmt.Sprint(result) + " documents")
+
+	return result
+}
+
+func countMongoWords(client *mgo.Session) int {
+	fmt.Println("Counting mongodb")
+
+	coll := client.DB("news").C("words")
 
 	result, err := coll.Count()
 	if err != nil {
