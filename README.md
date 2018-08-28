@@ -4,41 +4,42 @@ The purpose of this project is practicing and experimenting with the microservic
 # Microservices
 This software consists of 14 microservices:
 
-## API server
+### API server
 The API server is written in Go and provides a REST API that can be used by the frontend to retrieve data from the databases.
 
-## Agt article
+### Agt article
 A redis instance for storing hashes of already seen articles
 
-## Agt link
+### Agt link
 A redis instance for storing hashes of already seen links
 
-## Article downloader
+### Article downloader
 Microservice implemented in Go which receives links from the link queue and downloads the corresponding article. This article goes on the article queue
 
-## Link downloader
+### Link downloader
+Software implemented in Go that visits a set of websites and extracts potentially interesting links and pushes them on the link queue
 
-## Link queue
+### Link queue
 A redis queue to hold the not yet visited links for the downloader
 
-## Article queue
+### Article queue
 A redis queue to hold the not yet processed articles
 
-## Processor
+### Processor
 Software implemented in Go. It takes articles from the article queue, extracts information like keywords etc and pushes them into the two databases
 
-## Static content server
+### Static content server
 A httpd server that serves the frontend
 
-## Word cloud generator
+### Word cloud generator
 
-## Cleaner (TODO)
+### Cleaner (TODO)
 
-## Elastic search
+### Elastic search
 To make the articles searchable
 
-## MongoDB
+### MongoDB
 A MongoDB, this is the main database of the project
 
-## Cache
+### Cache
 A redis instance for caching
