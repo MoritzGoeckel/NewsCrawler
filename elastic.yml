@@ -49,7 +49,7 @@ spec:
           volumes:
           - name: elastic-volume
             hostPath:
-                path: /home/docker/data/elastic-volume/
+                path: /data/elastic-volume/
                 type: DirectoryOrCreate
 ---
 

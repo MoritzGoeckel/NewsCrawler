@@ -41,7 +41,7 @@ spec:
           volumes:
           - name: agt-link-redis-volume
             hostPath:
-                path: /home/docker/data/agt-link-redis-volume/
+                path: /data/agt-link-redis-volume/
                 type: DirectoryOrCreate
 ---
 apiVersion: v1

@@ -41,7 +41,7 @@ spec:
           volumes:
           - name: lq-redis-volume
             hostPath:
-                path: /home/docker/data/lq-redis-volume/
+                path: /data/lq-redis-volume/
                 type: DirectoryOrCreate
 ---
 apiVersion: v1

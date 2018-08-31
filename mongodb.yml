@@ -45,7 +45,7 @@ spec:
           volumes:
           - name: mongodb-volume
             hostPath:
-                path: /home/docker/data/mongodb-volume/
+                path: /data/mongodb-volume/
                 type: DirectoryOrCreate
 ---
 

@@ -41,7 +41,7 @@ spec:
           volumes:
           - name: cache-redis-volume
             hostPath:
-                path: /home/docker/data/cache-redis-volume/
+                path: /data/cache-redis-volume/
                 type: DirectoryOrCreate
 ---
 
