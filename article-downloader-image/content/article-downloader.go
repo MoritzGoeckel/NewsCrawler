@@ -70,10 +70,10 @@ func downloadArticle(link Link, agt *redis.Client, pq *redis.Client) {
 
 func getNextInQueue(client *redis.Client) string {
 	for {
-		fmt.Println("Trying to retrieve message") //Maybe should not log that
-		val, err := client.BLPop(30*time.Second, "pending").Result()
+		//fmt.Println("Trying to retrieve message")
+		val, err := client.BLPop(60*time.Second, "pending").Result()
 		if err == redis.Nil {
-			fmt.Println("No message in queue") //Maybe should not log that
+			//fmt.Println("No message in queue")
 			continue
 		} else if err != nil {
 			log.Fatal(err)

@@ -1,79 +1,158 @@
 package main
 
 import (
+	"errors"
 	"fmt"
-	"log"
 	"net/http"
-	"regexp"
-	"strings"
+	"time"
 
 	"github.com/PuerkitoBio/goquery"
 )
 
-func ParsePage(url string) []Link {
-	document := getHTML(url)
-	var links []Link
+/*document.Find("h1").Each(func(i int, selection *goquery.Selection) {
 
-	domainRegex := regexp.MustCompile("^(?:https?:\\/\\/)?(?:[^@\n]+@)?(?:www\\.)?([^:\\/\n?]+)")
-	baseDomainArr := domainRegex.FindStringSubmatch(url)
-	fmt.Println(baseDomainArr)
-	baseDomain := baseDomainArr[0]
+})*/
 
-	if baseDomain == "" {
-		log.Fatal("Could not determine base domain: " + baseDomain)
+func GetArticle(document *goquery.Document, url string, source string) (Article, error) {
+	/*html, err := document.Html()
+	if err != nil {
+		return Article{}, err
+	}*/
+
+	article := Article{Time: time.Now()}
+
+	datapoints := 0
+	datapointsStr := ""
+
+	//Source
+
+	article.Source = source
+	datapointsStr += "Source "
+	datapoints++
+
+	//Title
+
+	if title, exists := getMeta(document, "og:title"); exists {
+		article.Headline = title
+		datapointsStr += "Title "
+		datapoints++
+	} else {
+		article.Headline = document.Find("h1").First().Text()
+		if article.Headline != "" {
+			datapointsStr += "Title "
+			datapoints++
+		}
 	}
 
-	document.Find("a").Each(func(i int, selection *goquery.Selection) {
-		link := Link{}
+	//URL
 
-		var exists bool
-		link.Url, exists = selection.Attr("href")
-		if exists {
-			isRelative, err := regexp.MatchString("^\\/.*\\/", link.Url)
-			if err != nil {
-				log.Fatal(err)
-			}
+	if ogURL, exists := getMeta(document, "og:url"); exists {
+		article.Url = ogURL
+	} else {
+		article.Url = url
+	}
+	datapointsStr += "URL "
+	datapoints++
 
-			//fmt.Printf("Url: %s isRelative: %s isNormal: %s\n", link.Url, isRelative, isNormalUrl)
+	//Description
 
-			if isRelative || strings.Contains(link.Url, baseDomain) {
-				if isRelative {
-					link.Url = baseDomain + link.Url
-				}
+	if description, exists := getMeta(document, "og:description", "description"); exists {
+		article.Description = description
+		datapointsStr += "Description "
+		datapoints++
+	}
 
-				if len(link.Url) > 40 {
-					links = append(links, link)
-				}
-			}
-		}
-	})
+	//Image
 
-	return links
+	if image, exists := getMeta(document, "og:image", "twitter:image"); exists {
+		article.Image = image
+		datapointsStr += "Image "
+		datapoints++
+	}
+
+	//Search for content
+	//Should we add keywords?
+
+	if datapoints <= 3 {
+		return Article{}, errors.New("Not enough datapoints: " + fmt.Sprint(datapoints) + " -> " + datapointsStr)
+	}
+
+	return article, nil
 }
 
-func getHTML(url string) *goquery.Document {
+//Make it take an array as input
+func getMeta(document *goquery.Document, names ...string) (string, bool) {
+	for _, name := range names {
+		val, exists := document.Find("meta[name='" + name + "'], meta[property='" + name + "']").First().Attr("content")
+		if exists {
+			return val, exists
+		}
+	}
+
+	return "", false
+}
+
+func GetHTML(url string) (*goquery.Document, error) {
 	res, err := http.Get(url)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 
 	defer res.Body.Close()
 	if res.StatusCode != 200 {
-		log.Fatalf("status code error: %d %s", res.StatusCode, res.Status)
+		return nil, errors.New("Status code error: " + fmt.Sprint(res.StatusCode) + " " + fmt.Sprint(res.Status) + "%s")
 	}
 
 	doc, err := goquery.NewDocumentFromReader(res.Body)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 
-	return doc
+	return doc, nil
 }
 
 func main() {
-	links := ParsePage("http://spiegel.de")
-	for _, a := range links {
-		fmt.Println(a)
+	url := "https://www.shine.cn/news/nation/1809011453/"
+
+	doc, err := GetHTML(url)
+	if err != nil {
+		fmt.Print("Warning: " + url + " -> ")
+		fmt.Print(err)
+		fmt.Print("\r\n")
+		return
 	}
+
+	article, err := GetArticle(doc, url, "dummysrc")
+	if err != nil {
+		fmt.Print("Warning: " + url + " -> ")
+		fmt.Print(err)
+		fmt.Print("\r\n")
+		return
+	}
+
+	presentDatapoints(article)
+
 	fmt.Println("eop")
+}
+
+func addIfPresent(field string, fieldName string) int {
+	if field != "" {
+		return 1
+	}
+
+	fmt.Println("Not present: " + fieldName)
+	return 0
+}
+
+func presentDatapoints(article Article) {
+	datapoints := 0
+	datapoints += addIfPresent(article.Content, "Content")
+	datapoints += addIfPresent(article.Description, "Description")
+	datapoints += addIfPresent(article.Headline, "Headline")
+	datapoints += addIfPresent(article.Image, "Image")
+	datapoints += addIfPresent(article.Source, "Source")
+	//datapoints += addIfPresent(article.Time)
+	datapoints += addIfPresent(article.Url, "Url")
+
+	fmt.Printf("%d/6\n", datapoints)
 }

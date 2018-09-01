@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"sort"
 	"time"
 
 	"github.com/vjeantet/jodaTime"
@@ -15,14 +16,66 @@ func main() {
 	fmt.Println("Word cloud generator version 0.01")
 
 	mongo := getConnection()
+
+	fmt.Println("Retrieving words")
 	words := getWords(mongo)
+
+	fmt.Println("Retrieving words to date")
 	todayWords := getWordsToDate(mongo)
 
-	//Walk though todayWords
-	//Devide by words
+	fmt.Println("Making words searchable")
+	wordsBaselineMap := make(map[string]int)
 
-	//Sort
-	//Return or save
+	for _, word := range words {
+		wordsBaselineMap[word.Word] = word.Count
+		if word.Count == 0 {
+			log.Fatal("Assertion: Word count has been 0!")
+		}
+	}
+
+	//Number of spots on the leaderboard
+	num := 100
+	type scoredWord struct {
+		Word  string
+		Score float64
+	}
+	var leaderboard []scoredWord
+
+	addToLeaderboard := func(word string, score float64) {
+		leaderboard = append(leaderboard, scoredWord{word, score})
+		sort.Slice(leaderboard, func(i, j int) bool {
+			return leaderboard[i].Score > leaderboard[j].Score
+		})
+
+		if len(leaderboard) > num {
+			leaderboard = leaderboard[:num]
+		}
+	}
+
+	fmt.Println("Calculating scores")
+	for step, word := range todayWords {
+		score := float64(word.Count) / float64(wordsBaselineMap[word.Word])
+
+		if len(leaderboard) < num || leaderboard[len(leaderboard)-1].Score < score {
+			addToLeaderboard(word.Word, score)
+		}
+
+		if step%(len(todayWords)/10) == 0 {
+			fmt.Printf("%f percent done\n", float64(step)/float64(len(todayWords))*100.0)
+		}
+	}
+
+	//Sort it once again
+	sort.Slice(leaderboard, func(i, j int) bool {
+		return leaderboard[i].Score > leaderboard[j].Score
+	})
+
+	fmt.Println("The leaderboard")
+	fmt.Print(leaderboard)
+	fmt.Print("\n")
+
+	//TODO: Write it to the mongodb
+	fmt.Println("Writing to mongo")
 
 	fmt.Println("eop")
 }

@@ -15,6 +15,7 @@ import (
 	"github.com/olivere/elastic"
 	"github.com/vjeantet/jodaTime"
 	mgo "gopkg.in/mgo.v2"
+	"gopkg.in/mgo.v2/bson"
 )
 
 var cacheClient *redis.Client
@@ -34,6 +35,7 @@ func main() {
 	router.HandleFunc("/elastic_articles/{query}", elasticArticlesEndpoint)
 	router.HandleFunc("/number_articles/", numberArticlesEndpoint)
 	router.HandleFunc("/number_words/", numberWordsEndpoint)
+	router.HandleFunc("/number_words_todate/", numberWordsTodateEndpoint)
 	router.HandleFunc("/get_words/", getWordsEndpoint)
 	router.HandleFunc("/get_words_todate/", getWordsToDateEndpoint)
 
@@ -72,6 +74,24 @@ func numberWordsEndpoint(w http.ResponseWriter, r *http.Request) {
 	}
 
 	resp := response{Words: countMongoWords(mongoClient)}
+
+	js, err := json.Marshal(resp)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(js)
+}
+
+func numberWordsTodateEndpoint(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("Request on the numberWords todate endpoint")
+
+	type response struct {
+		WordsTodate int
+	}
+
+	resp := response{WordsTodate: countMongoWordsTodate(mongoClient)}
 
 	js, err := json.Marshal(resp)
 	if err != nil {
@@ -158,7 +178,7 @@ func getWords(client *mgo.Session) []Word {
 	collection := client.DB("news").C("words")
 
 	var all []Word
-	err := collection.Find(nil).Sort("-count").Limit(30).All(&all)
+	err := collection.Find(bson.M{"date": getToday()}).Sort("-count").Limit(30).All(&all)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -250,6 +270,25 @@ func countMongoWords(client *mgo.Session) int {
 	coll := client.DB("news").C("words")
 
 	result, err := coll.Count()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println("Found " + fmt.Sprint(result) + " documents")
+
+	return result
+}
+
+func getToday() string {
+	return jodaTime.Format("YYYY.MM.dd", time.Now())
+}
+
+func countMongoWordsTodate(client *mgo.Session) int {
+	fmt.Println("Counting mongodb")
+
+	coll := client.DB("news").C("words_to_date")
+
+	result, err := coll.Find(bson.M{"date": getToday()}).Count()
 	if err != nil {
 		log.Fatal(err)
 	}

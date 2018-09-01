@@ -4,29 +4,16 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"strings"
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
-	"github.com/dyatlov/go-opengraph/opengraph"
 )
 
-/*document.Find("h1").Each(func(i int, selection *goquery.Selection) {
-
-})*/
-
 func GetArticle(document *goquery.Document, url string, source string) (Article, error) {
-	html, err := document.Html()
+	/*html, err := document.Html()
 	if err != nil {
 		return Article{}, err
-	}
-
-	og := opengraph.NewOpenGraph()
-
-	err = og.ProcessHTML(strings.NewReader(html))
-	if err != nil {
-		return Article{}, err
-	}
+	}*/
 
 	article := Article{Time: time.Now()}
 
@@ -41,8 +28,8 @@ func GetArticle(document *goquery.Document, url string, source string) (Article,
 
 	//Title
 
-	if og.Title != "" {
-		article.Headline = og.Title
+	if title, exists := getMeta(document, "og:title"); exists {
+		article.Headline = title
 		datapointsStr += "Title "
 		datapoints++
 	} else {
@@ -55,8 +42,8 @@ func GetArticle(document *goquery.Document, url string, source string) (Article,
 
 	//URL
 
-	if og.URL != "" {
-		article.Url = og.URL
+	if ogURL, exists := getMeta(document, "og:url"); exists {
+		article.Url = ogURL
 	} else {
 		article.Url = url
 	}
@@ -65,33 +52,18 @@ func GetArticle(document *goquery.Document, url string, source string) (Article,
 
 	//Description
 
-	if og.Description != "" {
-		article.Description = og.Description
+	if description, exists := getMeta(document, "og:description", "description"); exists {
+		article.Description = description
 		datapointsStr += "Description "
 		datapoints++
-	} else {
-		description, exists := document.Find("meta[name=description]").First().Attr("content")
-		if exists {
-			article.Description = description
-			datapointsStr += "Description "
-			datapoints++
-		}
 	}
 
 	//Image
 
-	if len(og.Images) != 0 && og.Images[0].URL != "" {
-		article.Image = og.Images[0].URL
+	if image, exists := getMeta(document, "og:image", "twitter:image"); exists {
+		article.Image = image
 		datapointsStr += "Image "
 		datapoints++
-	} else {
-		image, exists := document.Find("meta[name=twitter:image]").First().Attr("content")
-		if exists {
-			article.Image = image
-			datapointsStr += "Image "
-			datapoints++
-		}
-		//search for biggest image on site
 	}
 
 	//Search for content
@@ -102,6 +74,18 @@ func GetArticle(document *goquery.Document, url string, source string) (Article,
 	}
 
 	return article, nil
+}
+
+//Make it take an array as input
+func getMeta(document *goquery.Document, names ...string) (string, bool) {
+	for _, name := range names {
+		val, exists := document.Find("meta[name='" + name + "'], meta[property='" + name + "']").First().Attr("content")
+		if exists {
+			return val, exists
+		}
+	}
+
+	return "", false
 }
 
 func GetHTML(url string) (*goquery.Document, error) {

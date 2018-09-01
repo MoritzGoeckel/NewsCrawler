@@ -4,7 +4,7 @@ metadata:
   name: wordcloud-generator
 spec:
   startingDeadlineSeconds: 3000
-  schedule: "0 * * * *" #*/30 * * * *
+  schedule: "49 * * * *" #*/30 * * * *
   concurrencyPolicy: Replace
   jobTemplate:
     spec:
