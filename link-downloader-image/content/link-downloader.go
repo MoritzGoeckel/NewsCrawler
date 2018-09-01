@@ -6,14 +6,19 @@ import (
 	"hash/fnv"
 	"io/ioutil"
 	"log"
+	"math/rand"
 	"os"
 	"time"
 
 	"github.com/go-redis/redis"
 )
 
+var random *rand.Rand
+
 func main() {
 	fmt.Println("Link downloader version 0.02")
+
+	random = rand.New(rand.NewSource(time.Now().UnixNano()))
 
 	sources := readSources()
 	agt, lq := getRedisConnections()
@@ -104,7 +109,7 @@ func alreadyGotThat(hash uint32, client *redis.Client) bool {
 }
 
 func setAlreadyGotThat(hash uint32, client *redis.Client) {
-	expiration := time.Duration(72) * time.Hour
+	expiration := time.Duration(100+random.Intn(50)) * time.Hour
 	err := client.Set(fmt.Sprint(hash), "seen", expiration).Err()
 	if err != nil {
 		log.Fatal(err)
