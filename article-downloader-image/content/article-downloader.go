@@ -38,15 +38,13 @@ func downloadArticle(link Link, agt *redis.Client, pq *redis.Client) {
 		return
 	}
 
-	article, err := GetArticle(doc)
+	article, err := GetArticle(doc, link.Url, link.Source)
 	if err != nil {
 		fmt.Print("Warning: " + link.Url + " -> ")
 		fmt.Print(err)
 		fmt.Print("\r\n")
 		return
 	}
-
-	article.Source = link.Source
 
 	h := hashArticle(article)
 	pushed := false
