@@ -1,6 +1,6 @@
-/api-server-image/content/bigtext.js
-/api-server-image/content/chart.js
-/api-server-image/content/Chunkfive.otf
-/api-server-image/content/jquery.fittext.js
-/api-server-image/content/jquery-ui.min.css
-/api-server-image/content/jquery-ui.min.js
+/api-server-image/content/static/bigtext.js
+/api-server-image/content/static/chart.js
+/api-server-image/content/static/Chunkfive.otf
+/api-server-image/content/static/jquery.fittext.js
+/api-server-image/content/static/jquery-ui.min.css
+/api-server-image/content/static/jquery-ui.min.js
