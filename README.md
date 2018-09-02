@@ -35,3 +35,6 @@ A MongoDB, this is the main database of the project
 
 ### Cache
 A redis instance for caching the API server
+
+### Look at me frontend
+![microservice architecture](https://raw.githubusercontent.com/MoritzGoeckel/KubernetesNewsService/master/media/news-frontend.png)
