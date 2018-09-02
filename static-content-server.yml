@@ -29,7 +29,8 @@ spec:
         spec:
           containers:
           - name:  static-content-server
-            image: moritzgoeckel/news-service:static-content-server 
+            image: moritzgoeckel/news-service:static-content-server
+            imagePullPolicy: Always
             ports:
             - containerPort: 80
 

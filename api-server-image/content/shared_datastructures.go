@@ -58,3 +58,8 @@ type WordToDate struct {
 	Count int
 	Date  string
 }
+
+type ScoredWord struct {
+	Word  string
+	Score float64
+}

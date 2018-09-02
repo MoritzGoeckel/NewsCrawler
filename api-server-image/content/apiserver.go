@@ -30,7 +30,8 @@ func main() {
 
 	fmt.Println("Defining http endpoints...")
 	router := mux.NewRouter().StrictSlash(true)
-	router.HandleFunc("/", index)
+
+	router.HandleFunc("/info", infoEndpoint)
 	router.HandleFunc("/mongo_articles", mongoArticlesEndpoint)
 	router.HandleFunc("/elastic_articles/{query}", elasticArticlesEndpoint)
 	router.HandleFunc("/number_articles/", numberArticlesEndpoint)
@@ -38,6 +39,11 @@ func main() {
 	router.HandleFunc("/number_words_todate/", numberWordsTodateEndpoint)
 	router.HandleFunc("/get_words/", getWordsEndpoint)
 	router.HandleFunc("/get_words_todate/", getWordsToDateEndpoint)
+	router.HandleFunc("/get_word_cloud/", getWordCloudEndpoint)
+	router.HandleFunc("/word_statistics/{query}", getWordStatisticsEndpoint)
+
+	//In the end
+	router.PathPrefix("/").Handler(http.FileServer(http.Dir("static")))
 
 	fmt.Println("Starting http server")
 	log.Fatal(http.ListenAndServe(":80", router))
@@ -47,7 +53,7 @@ func main() {
 	fmt.Println("eop")
 }
 
-func index(w http.ResponseWriter, r *http.Request) {
+func infoEndpoint(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Request on the index endpoint")
 	type response struct {
 		Status  string
@@ -63,6 +69,30 @@ func index(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Write(js)
+}
+
+func getWordStatisticsEndpoint(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("Request on the getWordStatistics endpoint")
+	vars := mux.Vars(r)
+	query := vars["query"]
+
+	collection := mongoClient.DB("news").C("words_to_date")
+
+	var all []WordToDate
+	err := collection.Find(bson.M{"word": query}).Sort("date").Limit(100).All(&all)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	js, err := json.Marshal(all)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Write(js)
 }
 
@@ -81,6 +111,28 @@ func numberWordsEndpoint(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Write(js)
+}
+
+func getWordCloudEndpoint(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("Request on the numberWords endpoint")
+
+	collection := mongoClient.DB("news").C("word_cloud")
+
+	var all []ScoredWord
+	err := collection.Find(nil).Sort("-score").Limit(30).All(&all)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	js, err := json.Marshal(all)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Write(js)
 }
 
@@ -99,6 +151,7 @@ func numberWordsTodateEndpoint(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Write(js)
 }
 
@@ -117,6 +170,7 @@ func numberArticlesEndpoint(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Write(js)
 }
 
@@ -130,6 +184,7 @@ func mongoArticlesEndpoint(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Write(js)
 }
 
@@ -145,6 +200,7 @@ func elasticArticlesEndpoint(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Write(js)
 }
 
@@ -158,6 +214,7 @@ func getWordsEndpoint(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Write(js)
 }
 
@@ -171,6 +228,7 @@ func getWordsToDateEndpoint(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Write(js)
 }
 

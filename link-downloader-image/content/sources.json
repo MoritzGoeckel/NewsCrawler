@@ -37,7 +37,6 @@
     {"urls": ["https://www.accesswire.com/publish.aspx?reset=1"], "name": "AccessWire", "id":"accw"},
     {"urls": ["https://www.benzinga.com/news"], "name": "Benzinga", "id":"bezi"},
     {"urls": ["http://www.zerohedge.com/"], "name": "ZeroHedge", "id":"zhge"},
-    {"urls": ["http://www.spiegel.de/international/"], "name": "SpiegelInternational", "id":"spint"},
     {"urls": ["http://asia.nikkei.com/"], "name": "Nikkei", "id":"nik"},
     {"urls": ["http://www.japantimes.co.jp/"], "name": "JapanTimes", "id":"jpt"},
     {"urls": ["https://seekingalpha.com/market-news"], "name": "SeekingAlpha", "id":"ska"},

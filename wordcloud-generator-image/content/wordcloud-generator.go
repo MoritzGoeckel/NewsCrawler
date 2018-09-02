@@ -13,7 +13,7 @@ import (
 )
 
 func main() {
-	fmt.Println("Word cloud generator version 0.01")
+	fmt.Println("Word cloud generator version 0.02")
 
 	mongo := getConnection()
 
@@ -35,20 +35,16 @@ func main() {
 
 	//Number of spots on the leaderboard
 	num := 100
-	type scoredWord struct {
-		Word  string
-		Score float64
-	}
-	var leaderboard []scoredWord
+	var leaderboard []ScoredWord
 
 	addToLeaderboard := func(word string, score float64) {
-		leaderboard = append(leaderboard, scoredWord{word, score})
+		leaderboard = append(leaderboard, ScoredWord{word, score})
 		sort.Slice(leaderboard, func(i, j int) bool {
 			return leaderboard[i].Score > leaderboard[j].Score
 		})
 
 		if len(leaderboard) > num {
-			leaderboard = leaderboard[:num]
+			leaderboard = leaderboard[:num] // + 1?
 		}
 	}
 
@@ -57,6 +53,9 @@ func main() {
 		score := float64(word.Count) / float64(wordsBaselineMap[word.Word])
 
 		if len(leaderboard) < num || leaderboard[len(leaderboard)-1].Score < score {
+			if len(leaderboard) < num {
+				fmt.Println("Filling empty slots")
+			}
 			addToLeaderboard(word.Word, score)
 		}
 
@@ -65,17 +64,27 @@ func main() {
 		}
 	}
 
-	//Sort it once again
-	sort.Slice(leaderboard, func(i, j int) bool {
-		return leaderboard[i].Score > leaderboard[j].Score
-	})
-
 	fmt.Println("The leaderboard")
 	fmt.Print(leaderboard)
 	fmt.Print("\n")
 
-	//TODO: Write it to the mongodb
+	collection := mongo.DB("news").C("word_cloud")
+
+	fmt.Println("Deleting old from mongo")
+	_, err := collection.RemoveAll(nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	fmt.Println("Writing to mongo")
+	bulk := collection.Bulk()
+	for _, entry := range leaderboard {
+		bulk.Insert(entry)
+	}
+	_, err = bulk.Run()
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	fmt.Println("eop")
 }
@@ -96,8 +105,8 @@ func getWordsToDate(client *mgo.Session) []WordToDate {
 	now := jodaTime.Format("YYYY.MM.dd", time.Now())
 	collection := client.DB("news").C("words_to_date")
 
-	var all []WordToDate //Min is 10
-	err := collection.Find(bson.M{"date": now, "count": bson.M{"$gt": 10}}).Sort("-count").Limit(50 * 1000).All(&all)
+	var all []WordToDate
+	err := collection.Find(bson.M{"date": now, "count": bson.M{"$gt": 5}}).Sort("-count").Limit(50 * 1000).All(&all)
 	if err != nil {
 		log.Fatal(err)
 	}
