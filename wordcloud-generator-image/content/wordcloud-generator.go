@@ -50,7 +50,16 @@ func main() {
 
 	fmt.Println("Calculating scores")
 	for step, word := range todayWords {
-		score := float64(word.Count) / float64(wordsBaselineMap[word.Word])
+		baseline, exist := wordsBaselineMap[word.Word]
+		if !exist {
+			baseline = 1
+		}
+
+		if baseline == 0 {
+			log.Fatal("Assert: Baseline was 0!")
+		}
+
+		score := float64(word.Count) / float64(baseline)
 
 		if len(leaderboard) < num || leaderboard[len(leaderboard)-1].Score < score {
 			if len(leaderboard) < num {
@@ -93,7 +102,7 @@ func getWords(client *mgo.Session) []Word {
 	collection := client.DB("news").C("words")
 
 	var all []Word
-	err := collection.Find(nil).Sort("-count").Limit(50 * 1000).All(&all)
+	err := collection.Find(bson.M{"count": bson.M{"$gt": 5}}).Sort("-count").Limit(50 * 1000).All(&all)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -106,7 +115,7 @@ func getWordsToDate(client *mgo.Session) []WordToDate {
 	collection := client.DB("news").C("words_to_date")
 
 	var all []WordToDate
-	err := collection.Find(bson.M{"date": now, "count": bson.M{"$gt": 5}}).Sort("-count").Limit(50 * 1000).All(&all)
+	err := collection.Find(bson.M{"date": now, "count": bson.M{"$gt": 30}}).Sort("-count").Limit(50 * 1000).All(&all)
 	if err != nil {
 		log.Fatal(err)
 	}
