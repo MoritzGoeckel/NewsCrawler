@@ -138,7 +138,7 @@ func updateWordCountToDate(words []string, mongo *mgo.Session) {
 	fmt.Print("\r\n")
 
 	//Todo: Create some kind of cleanup for very seldom words every 24h
-	//Todo: Create worker who constructs the word cloud every now and then
+	//Todo: Detect the language
 }
 
 func insertIntoMongo(data BsonArticle, mongo *mgo.Session) {
