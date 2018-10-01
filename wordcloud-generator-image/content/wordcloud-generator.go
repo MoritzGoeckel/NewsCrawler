@@ -102,7 +102,7 @@ func getWords(client *mgo.Session) []Word {
 	collection := client.DB("news").C("words")
 
 	var all []Word
-	err := collection.Find(bson.M{"count": bson.M{"$gt": 5}}).Sort("-count").Limit(50 * 1000).All(&all)
+	err := collection.Find(bson.M{"count": bson.M{"$gt": 2}}).Sort("-count").Limit(50 * 1000).All(&all)
 	if err != nil {
 		log.Fatal(err)
 	}
