@@ -11,5 +11,5 @@ kubectl apply -f elastic.yml
 kubectl apply -f article-downloader.yml
 kubectl apply -f link-downloader.yml
 kubectl apply -f processor.yml
-kubectl apply -f static-content-server.yml
 kubectl apply -f api-server.yml
+kubectl apply -f wordcloud-generator.yml

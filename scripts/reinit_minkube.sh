@@ -3,7 +3,7 @@ minikube delete
 minikube start --network-plugin=cni
 
 minikube ssh <<'ENDSSH'
-mkdir /data/elastic-volume
-chmod 777 /data/elastic-volume
+sudo mkdir /data/elastic-volume
+sudo chmod 777 /data/elastic-volume
 logout
 ENDSSH
