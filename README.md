@@ -86,3 +86,8 @@ sudo kubectl get pods
 ```
 sudo kubectl logs <pod name>
 ```
+
+## Get to the frontend
+```
+minikube service api-server
+```
