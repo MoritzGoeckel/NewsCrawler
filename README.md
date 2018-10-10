@@ -38,3 +38,17 @@ A redis instance for caching the API server
 
 ### Look at me frontend
 ![microservice architecture](https://raw.githubusercontent.com/MoritzGoeckel/KubernetesNewsService/master/media/news-frontend.png)
+
+## Deployment
+### Install
+```
+sudo ./scripts/install_minikube.sh
+sudo ./scripts/install_kubectl.sh
+sudo ./scripts/reinit_minkube.sh
+sudo ./scripts/apply_kubernetes.sh
+```
+
+### Start
+```
+sudo ./scripts/start_minkube.sh
+```
