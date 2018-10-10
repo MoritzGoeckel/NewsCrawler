@@ -47,6 +47,7 @@ sudo ./scripts/install_kubectl.sh
 sudo ./scripts/reinit_minkube.sh
 sudo ./scripts/apply_kubernetes.sh
 ```
+Now minkube is running
 
 ## Start
 ```
@@ -62,4 +63,26 @@ sudo minikube stop
 ```
 sudo ./scripts/reinit_minkube.sh
 sudo ./scripts/apply_kubernetes.sh
+```
+Now minkube is running
+
+## Delete a kind
+```
+sudo kubectl delete <kind> <name>
+```
+Kind is for example deployment or cronjob
+
+## Deploy yml
+```
+sudo kubectl apply -f <filename>
+```
+
+## Get pods
+```
+sudo kubectl get pods
+```
+
+## Get logs
+```
+sudo kubectl logs <pod name>
 ```
