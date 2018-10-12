@@ -1,11 +1,9 @@
-FROM golang:1.10
+FROM python:3
 
-WORKDIR /go/src/app
+WORKDIR /usr/src/app
 COPY ./content/ .
+RUN pip install --no-cache-dir -r requirements.txt
 
-RUN go get -d -v ./...
-RUN go install -v ./...
-
-CMD ["app"]
+CMD ["python", "./article-downloader.py"]
 
 LABEL name="downloader"
