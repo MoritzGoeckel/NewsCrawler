@@ -4,8 +4,7 @@ import time
 from datetime import datetime, date, time, timedelta
 import json
 from newspaper import Article, Config
-#import nltk
-#nltk.download('punkt') ---> requirements.txt
+from bs4 import BeautifulSoup
 import hashlib
 
 def main():
@@ -25,7 +24,6 @@ def getRedisConnections():
 
     if agtUrl == '' or pqUrl == '' or lqUrl == '':
         print('Environment variables are not set')
-        #TODO: implement logging mechanism
 
     rp = 6379 #default redis port
     agtClient = redis.Redis(host=agtUrl, port=rp, password='', db=0)
@@ -52,9 +50,30 @@ def downloadArticle(url, source, agtClient, pqClient):
         return
 
     if article.meta_lang in ['en']:
+        articleHtml = article.html
+        soup = BeautifulSoup(articleHtml, 'html.parser')
+        description = ''
+        try:
+            if not description:
+                description = soup.find('meta', attrs={'name':'description'}).get('content')
+        except:
+            if not description:
+                description = ''
+        try:
+            if not description:
+                description = soup.find('meta', attrs={'property':'og:description'}).get('content')
+        except:
+            if not description:
+                description = ''
+        try:
+            if not description:
+                description = soup.find('meta', attrs={'property':'twitter:description'}).get('content')
+        except:
+            if not description:
+                description = ''
         a = {
             'Headline': article.title,
-            'Description': '', #no description with newspaper3k
+            'Description': description,
             'Image': article.top_image,
             'Content': article.text,
             'Source': source,
@@ -73,7 +92,6 @@ def downloadArticle(url, source, agtClient, pqClient):
         if pushed:
             pushedMsg = 'new'
 
-        #TODO: logging mechanism
         print(pushedMsg, "\t", a)
 
 def hashArticle(a):
