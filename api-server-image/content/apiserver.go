@@ -41,6 +41,7 @@ func main() {
 	router.HandleFunc("/get_words_todate/", getWordsToDateEndpoint)
 	router.HandleFunc("/get_word_cloud/", getWordCloudEndpoint)
 	router.HandleFunc("/word_statistics/{query}", getWordStatisticsEndpoint)
+	router.HandleFunc("/get_article_count_since/{date}", getArticelCountSinceEndpoint)
 
 	//In the end
 	router.PathPrefix("/").Handler(http.FileServer(http.Dir("static")))
@@ -337,6 +338,7 @@ func countMongoWords(client *mgo.Session) int {
 	return result
 }
 
+//TODO: remove and replace with timeUtils
 func getToday() string {
 	return jodaTime.Format("YYYY.MM.dd", time.Now())
 }
@@ -347,6 +349,7 @@ func countMongoWordsTodate(client *mgo.Session) int {
 	coll := client.DB("news").C("words_to_date")
 
 	result, err := coll.Find(bson.M{"date": getToday()}).Count()
+	//TODO: ist hier wirklich "date" gemeint oder doch "time" ???
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -370,6 +373,29 @@ func searchMongo(client *mgo.Session) []BsonArticle {
 	fmt.Println("Found " + fmt.Sprint(len(all)) + " documents")
 
 	return all
+}
+
+func getArticelCountSinceEndpoint(w http.ResponseWriter, r *http.Request) {
+	collection := mongoClient.DB("news").C("articles")
+
+	vars := mux.Vars(r)
+	dateq := vars["date"]
+	fmt.Println("Datequeuery ", dateq)
+	//fromDate := time.Date(2019, time.November, 4, 0, 0, 0, 0, time.UTC)
+	count, err := collection.Find(bson.M{"time": bson.M{"$lt": time.Now()}}).Count()
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println("Count ", count)
+
+	js, err2 := json.Marshal(count)
+	if err2 != nil {
+		log.Fatal(err2)
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Write(js)
 }
 
 func getConnections() (*redis.Client, *elastic.Client, *mgo.Session) {

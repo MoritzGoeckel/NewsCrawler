@@ -9,9 +9,9 @@ import (
 const year = "YYYY"
 const yearMonth = "YYYY.MM"
 const yearMonthDay = "YYYY.MM.dd"
-const yearMonthDayHour = "YYYY.MM.dd:HH"
-const yearMonthDayHourMinute = "YYYY.MM.dd:HH.mm"
-const yearMonthDayHourMinuteSecond = "YYYY.MM.dd:HH.mm.ss"
+const yearMonthDayHour = "YYYY.MM.ddTHHZ"
+const yearMonthDayHourMinute = "YYYY.MM.ddTHH:mmZ"
+const yearMonthDayHourMinuteSecond = "YYYY.MM.ddTHH:mm:ssZ"
 
 //time getters
 func getYear() string {
@@ -20,7 +20,7 @@ func getYear() string {
 func getMonth() string {
 	return jodaTime.Format(yearMonth, time.Now())
 }
-func getToday() string {
+func getDay() string {
 	return jodaTime.Format(yearMonthDay, time.Now())
 }
 func getHour() string {
@@ -55,20 +55,20 @@ func getTimeInXDays(x int, format string) string {
 
 //time past/future getters for hour,minute,second
 func getTimeXHoursAgo(x int, format string) string {
-	return jodaTime.Format(format, time.Now().Add(-x*time.Hour))
+	return jodaTime.Format(format, time.Now().Add(time.Duration(-x)*time.Hour))
 }
 func getTimeXMinAgo(x int, format string) string {
-	return jodaTime.Format(format, time.Now().Add(-x*time.Minute))
+	return jodaTime.Format(format, time.Now().Add(time.Duration(-x)*time.Minute))
 }
 func getTimeXSecondsAgo(x int, format string) string {
-	return jodaTime.Format(format, time.Now().Add(-x*time.Second))
+	return jodaTime.Format(format, time.Now().Add(time.Duration(-x)*time.Second))
 }
 func getTimeInXHours(x int, format string) string {
-	return jodaTime.Format(format, time.Now().Add(x*time.Hour))
+	return jodaTime.Format(format, time.Now().Add(time.Duration(x)*time.Hour))
 }
 func getTimeInXMin(x int, format string) string {
-	return jodaTime.Format(format, time.Now().Add(x*time.Minute))
+	return jodaTime.Format(format, time.Now().Add(time.Duration(x)*time.Minute))
 }
 func getTimeInXSeconds(x int, format string) string {
-	return jodaTime.Format(format, time.Now().Add(x*time.Second))
+	return jodaTime.Format(format, time.Now().Add(time.Duration(x)*time.Second))
 }

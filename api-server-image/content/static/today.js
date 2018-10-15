@@ -18,6 +18,12 @@ $(window).resize(function () {
 });
 
 $(function(){
+    $.getJSON(url + "get_article_count_since/2019-11-04 00:00:00 +0000 UTC", function(data){
+        console.log("Articlecount: ", data)
+    })
+});
+
+$(function(){
     $(".artikelSection").hide();
     $(".verlaufSection").hide();
     $(".bilderSection").hide();
