@@ -1,6 +1,6 @@
 import redis
 import os
-import time
+import time as t
 from datetime import datetime, date, time, timedelta
 import json
 from newspaper import Article, Config
@@ -35,7 +35,7 @@ def getNextInQueue(client):
     while True:
         rval = client.blpop(keys='pending', timeout=60)
         if not rval:
-            time.sleep(10)
+            t.sleep(10)
             continue
         return rval
 
