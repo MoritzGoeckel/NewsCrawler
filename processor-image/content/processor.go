@@ -40,10 +40,10 @@ func main() {
 		fmt.Println("Processing message: " + message)
 
 		fmt.Println("Inserting into Mongo")
-		insertIntoMongo(BsonArticle{Headline: a.Headline, Description: a.Description, Image: a.Image, Content: a.Content, Source: a.Source, Time: a.Time, Url: a.Url}, mongo)
+		insertIntoMongo(BsonArticle{Headline: a.Headline, Description: a.Description, Image: a.Image, Content: a.Content, Source: a.Source, DateTime: a.DateTime, Url: a.Url}, mongo)
 
 		fmt.Println("Inserting into elastic")
-		insertIntoElastic(JsonArticle{Headline: a.Headline, Description: a.Description, Image: a.Image, Content: a.Content, Source: a.Source, Time: a.Time, Url: a.Url}, &ctx, elastic)
+		insertIntoElastic(JsonArticle{Headline: a.Headline, Description: a.Description, Image: a.Image, Content: a.Content, Source: a.Source, DateTime: a.DateTime, Url: a.Url}, &ctx, elastic)
 
 		fmt.Println("Gettings words")
 		words := getWords(a)
@@ -154,7 +154,6 @@ func insertIntoElastic(article JsonArticle, ctx *context.Context, client *elasti
 	put1, err := client.Index().
 		Index("articles").
 		Type("article").
-		// Id("1"). //How to assign an id automatically?
 		BodyJson(article).
 		Do(*ctx)
 	if err != nil {
@@ -182,11 +181,16 @@ const elasticMapping = `
 					"store": true,
 					"fielddata": true
 				},
+				"description":{
+					"type":"text",
+					"store": true,
+					"fielddata": true
+				},
 				"url":{
 					"type":"text",
 					"store": true
 				},
-				"time":{
+				"datetime":{
 					"type":"date"
 				},
 				"suggest_field":{

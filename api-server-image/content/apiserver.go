@@ -8,12 +8,10 @@ import (
 	"net/http"
 	"os"
 	"reflect"
-	"time"
 
 	"github.com/go-redis/redis"
 	"github.com/gorilla/mux"
 	"github.com/olivere/elastic"
-	"github.com/vjeantet/jodaTime"
 	mgo "gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )
@@ -60,9 +58,10 @@ func infoEndpoint(w http.ResponseWriter, r *http.Request) {
 		Status  string
 		Version int
 		Date    string
+		Epoch   int64
 	}
 
-	resp := response{Status: "working", Version: 0, Date: jodaTime.Format("YYYY.MM.dd", time.Now())}
+	resp := response{Status: "working", Version: 0, Date: getToday(), Epoch: getEpochNow()}
 
 	js, err := json.Marshal(resp)
 	if err != nil {
@@ -257,26 +256,6 @@ func getWordsToDate(client *mgo.Session) []WordToDate {
 	return all
 }
 
-/*func getCache(client *redis.Client) {
-	val, err := client.Get(fmt.Sprint(hash)).Result()
-	if err == redis.Nil {
-		return false
-	} else if err != nil {
-		log.Fatal(err)
-		return true
-	} else {
-		return true
-	}
-}
-
-func setCache(client *redis.Client) {
-	expiration := time.Duration(1) * time.Hour
-	err := client.Set(fmt.Sprint(hash), "seen", expiration).Err()
-	if err != nil {
-		log.Fatal(err)
-	}
-}*/
-
 func searchDocument(client *elastic.Client, query string) []JsonArticle {
 	fmt.Println("Searching in elastic for: " + query)
 	ctx := context.Background()
@@ -284,7 +263,7 @@ func searchDocument(client *elastic.Client, query string) []JsonArticle {
 	searchResult, err := client.Search().
 		Index("articles").
 		Query(termQuery).
-		Sort("time", true).
+		Sort("datetime", true).
 		From(0).Size(10).
 		Pretty(false).
 		Do(ctx)
@@ -338,18 +317,14 @@ func countMongoWords(client *mgo.Session) int {
 	return result
 }
 
-//TODO: remove and replace with timeUtils
-func getToday() string {
-	return jodaTime.Format("YYYY.MM.dd", time.Now())
-}
-
 func countMongoWordsTodate(client *mgo.Session) int {
 	fmt.Println("Counting mongodb")
 
 	coll := client.DB("news").C("words_to_date")
 
+	//Date is today in YY.MM.dd
+	//This is the word count table, not to be confused with the article table
 	result, err := coll.Find(bson.M{"date": getToday()}).Count()
-	//TODO: ist hier wirklich "date" gemeint oder doch "time" ???
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -365,7 +340,7 @@ func searchMongo(client *mgo.Session) []BsonArticle {
 	coll := client.DB("news").C("articles")
 
 	var all []BsonArticle
-	err := coll.Find(nil).Sort("time").Limit(10).All(&all)
+	err := coll.Find(nil).Sort("datetime").Limit(10).All(&all)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -381,8 +356,8 @@ func getArticelCountSinceEndpoint(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	dateq := vars["date"]
 	fmt.Println("Datequeuery ", dateq)
-	//fromDate := time.Date(2019, time.November, 4, 0, 0, 0, 0, time.UTC)
-	count, err := collection.Find(bson.M{"time": bson.M{"$lt": time.Now()}}).Count()
+
+	count, err := collection.Find(bson.M{"datetime": bson.M{"$lt": getEpochNow()}}).Count()
 	if err != nil {
 		log.Fatal(err)
 	}

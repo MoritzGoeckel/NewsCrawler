@@ -13,6 +13,14 @@ const yearMonthDayHour = "YYYY.MM.ddTHHZ"
 const yearMonthDayHourMinute = "YYYY.MM.ddTHH:mmZ"
 const yearMonthDayHourMinuteSecond = "YYYY.MM.ddTHH:mm:ssZ"
 
+func getEpochNow() int64 {
+	return time.Now().Unix()
+}
+
+func getToday() string {
+	return jodaTime.Format("YYYY.MM.dd", time.Now())
+}
+
 //time getters
 func getYear() string {
 	return jodaTime.Format(year, time.Now())

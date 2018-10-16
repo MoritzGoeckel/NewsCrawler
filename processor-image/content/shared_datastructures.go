@@ -1,8 +1,6 @@
 package main
 
 import (
-	"time"
-
 	"github.com/olivere/elastic"
 )
 
@@ -13,17 +11,17 @@ type Article struct {
 	Content     string
 	Source      string
 	Url         string
-	Time        time.Time
+	DateTime    int64
 }
 
 type BsonArticle struct {
-	Headline    string    `bson:"headline"`
-	Content     string    `bson:"content"`
-	Description string    `bson:"description"`
-	Image       string    `bson:"image"`
-	Source      string    `bson:"source"`
-	Url         string    `bson:"url"`
-	Time        time.Time `bson:"time"`
+	Headline    string `bson:"headline"`
+	Content     string `bson:"content"`
+	Description string `bson:"description"`
+	Image       string `bson:"image"`
+	Source      string `bson:"source"`
+	Url         string `bson:"url"`
+	DateTime    int64  `bson:"datetime"`
 }
 
 type JsonArticle struct {
@@ -33,7 +31,7 @@ type JsonArticle struct {
 	Image       string                `json:"image"`
 	Source      string                `json:"source"`
 	Url         string                `json:"url"`
-	Time        time.Time             `json:"time"`
+	DateTime    int64                 `json:"datetime"`
 	Suggest     *elastic.SuggestField `json:"suggest_field,omitempty"`
 }
 
