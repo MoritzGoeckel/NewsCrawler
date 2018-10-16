@@ -11,6 +11,7 @@ type Article struct {
 	Content     string
 	Source      string
 	Url         string
+	Language    string
 	DateTime    int64
 }
 
@@ -21,6 +22,7 @@ type BsonArticle struct {
 	Image       string `bson:"image"`
 	Source      string `bson:"source"`
 	Url         string `bson:"url"`
+	Language    string `bson:"language"`
 	DateTime    int64  `bson:"datetime"`
 }
 
@@ -31,6 +33,7 @@ type JsonArticle struct {
 	Image       string                `json:"image"`
 	Source      string                `json:"source"`
 	Url         string                `json:"url"`
+	Language    string                `json:"language"`
 	DateTime    int64                 `json:"datetime"`
 	Suggest     *elastic.SuggestField `json:"suggest_field,omitempty"`
 }

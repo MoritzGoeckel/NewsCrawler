@@ -16,7 +16,7 @@ func GetArticle(document *goquery.Document, url string, source string) (Article,
 	}*/
 
 	epochNow := time.Now().Unix()
-	article := Article{DateTime: epochNow}
+	article := Article{DateTime: epochNow, Language: "NONE"}
 
 	datapoints := 0
 	datapointsStr := ""

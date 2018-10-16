@@ -40,10 +40,10 @@ func main() {
 		fmt.Println("Processing message: " + message)
 
 		fmt.Println("Inserting into Mongo")
-		insertIntoMongo(BsonArticle{Headline: a.Headline, Description: a.Description, Image: a.Image, Content: a.Content, Source: a.Source, DateTime: a.DateTime, Url: a.Url}, mongo)
+		insertIntoMongo(BsonArticle{Headline: a.Headline, Description: a.Description, Image: a.Image, Content: a.Content, Source: a.Source, DateTime: a.DateTime, Language: a.Language, Url: a.Url}, mongo)
 
 		fmt.Println("Inserting into elastic")
-		insertIntoElastic(JsonArticle{Headline: a.Headline, Description: a.Description, Image: a.Image, Content: a.Content, Source: a.Source, DateTime: a.DateTime, Url: a.Url}, &ctx, elastic)
+		insertIntoElastic(JsonArticle{Headline: a.Headline, Description: a.Description, Image: a.Image, Content: a.Content, Source: a.Source, DateTime: a.DateTime, Language: a.Language, Url: a.Url}, &ctx, elastic)
 
 		fmt.Println("Gettings words")
 		words := getWords(a)
