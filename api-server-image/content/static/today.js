@@ -17,8 +17,9 @@ $(window).resize(function () {
     onResize();
 });
 
+//RFC3339 time format
 $(function(){
-    $.getJSON(url + "get_article_count_since/2019-11-04 00:00:00 +0000 UTC", function(data){
+    $.getJSON(url + "get_article_count_since/2018-10-17T12:30:00Z", function(data){
         console.log("Articlecount: ", data)
     })
 });

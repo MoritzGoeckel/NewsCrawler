@@ -61,7 +61,7 @@ func infoEndpoint(w http.ResponseWriter, r *http.Request) {
 		Epoch   int64
 	}
 
-	resp := response{Status: "working", Version: 0, Date: getToday(), Epoch: getEpochNow()}
+	resp := response{Status: "working!", Version: 0, Date: getToday(), Epoch: getEpochNow()}
 
 	js, err := json.Marshal(resp)
 	if err != nil {
@@ -357,7 +357,7 @@ func getArticelCountSinceEndpoint(w http.ResponseWriter, r *http.Request) {
 	dateq := vars["date"]
 	fmt.Println("Datequeuery ", dateq)
 
-	count, err := collection.Find(bson.M{"datetime": bson.M{"$lt": getEpochNow()}}).Count()
+	count, err := collection.Find(bson.M{"datetime": bson.M{"$gt": parseRFCTimestringToEpoch(dateq)}}).Count()
 	if err != nil {
 		log.Fatal(err)
 	}

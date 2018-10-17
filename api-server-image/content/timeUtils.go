@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log"
 	"time"
 
 	"github.com/vjeantet/jodaTime"
@@ -17,8 +18,20 @@ func getEpochNow() int64 {
 	return time.Now().Unix()
 }
 
+//TODO: this is the same as getDay ...
 func getToday() string {
 	return jodaTime.Format("YYYY.MM.dd", time.Now())
+}
+
+//parse methods
+
+func parseRFCTimestringToEpoch(rfcTime string) int64 {
+	//RFC3339 -> Example: "2019-12-24T00:00:00Z"
+	res, err := time.Parse(time.RFC3339, rfcTime)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return res.Unix()
 }
 
 //time getters
