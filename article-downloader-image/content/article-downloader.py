@@ -78,7 +78,8 @@ def downloadArticle(url, source, agtClient, pqClient):
             'Content': article.text,
             'Source': source,
             'Url': url,
-            'Time': str(datetime.now())
+            'Language': article.meta_lang, 
+            'DateTime': int(t.time())
         }
         h = hashArticle(a)
         pushed = False
