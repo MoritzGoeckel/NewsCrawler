@@ -1,0 +1,4 @@
+Flask==1.0.2
+nltk==3.3
+numpy==1.15.0
+ujson==1.35
