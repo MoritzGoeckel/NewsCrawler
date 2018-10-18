@@ -29,7 +29,7 @@ spec:
         spec:
           containers:
           - name: article-downloader
-            image: moritzgoeckel/news-service:article-downloader
+            image: joapfel/articledownloader:0.03
             imagePullPolicy: Always
             env:
             - name: agt-article-redis-url
