@@ -1,4 +1,4 @@
-docker rmi moritzgoeckel/news-service:article-downloader
+docker rmi joapfel/articledownloader:0.03
 
-docker build -t moritzgoeckel/news-service:article-downloader .
-docker push moritzgoeckel/news-service:article-downloader 
+docker build -t joapfel/articledownloader:0.03 .
+docker push joapfel/articledownloader:0.03 
