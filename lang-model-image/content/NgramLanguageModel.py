@@ -56,8 +56,6 @@ class Model(object):
     def mle(self, sequence):
         p = 0
         print(self.ngram_counts)
-        #print('french free market: ',self.ngram_counts['french free market'])
-        #sys.exit()
         for ngram in self._ngrams(sequence):
             ngram = ' '.join(ngram)
             ngram_frequency = self.ngram_counts[ngram]
