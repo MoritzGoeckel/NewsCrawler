@@ -1,4 +1,6 @@
-from nltk.tokenize import TweetTokenizer
+import string
+from nltk.tokenize import TweetTokenizer, sent_tokenize
+from nltk.corpus import stopwords, reuters
 import numpy as np
 from collections import Counter
 import ujson
@@ -7,7 +9,7 @@ import ujson
 class Model(object):
 
     __slots__= 'n', 'ngram_frequencies', 'tokenizer', 'padding_start', 'padding_end', \
-               'ngram_counts', 'nc_values', 'n_tokens', 'unigram_count'
+               'ngram_counts', 'nc_values', 'n_tokens', 'unigram_count', 'english_stop_words', 'unicodes2remove'
 
     def __init__(self, n =2, padding_start='<$>', padding_end='</$>'):
         self.n = n
@@ -19,6 +21,9 @@ class Model(object):
         self.nc_values = None #list of all possible frequencies
         self.n_tokens = None #the sum of all values
         self.unigram_count = None #number of unigrams (from the original ngram counts)
+        self.english_stop_words = stopwords.words('english')
+        self.unicodes2remove = [u'\u2018', u'\u2019', u'\u201a', u'\u201b', u'\u201c', u'\u201d', u'\u201e', u'\u201f', u'\u2014']
+
 
 
     def read_frequencies(self, path='reuters_freq'):
@@ -50,21 +55,34 @@ class Model(object):
 
     def mle(self, sequence):
         p = 0
-        for ngram in self._ngrams(self.tokenizer.tokenize(sequence)):
+        print(self.ngram_counts)
+        #print('french free market: ',self.ngram_counts['french free market'])
+        #sys.exit()
+        for ngram in self._ngrams(sequence):
+            ngram = ' '.join(ngram)
             ngram_frequency = self.ngram_counts[ngram]
             # ngram probability from good turing equivalence classes
             if ngram_frequency > 0:
-                p += np.log2(self.nc_values.count(ngram_frequency) * ngram_frequency)\
-                     - np.log2(self.n_tokens)
+                p += (np.log2(self.nc_values.count(ngram_frequency) * ngram_frequency)) / np.log2(self.n_tokens)
             else:
-                p += np.log2(self.unigram_count) - np.log2(self.n_tokens)
-        print('mle: ', p)
+                p += (np.log2(self.unigram_count)) / np.log2(self.n_tokens)
         return p
 
     def cross_entropy(self, sequence):
-        return -(1/len(list(self.tokenizer.tokenize(sequence)))) * self.mle(sequence)
+        seq_length = 0
+        mle = 0
+        sequence = sequence.translate(str.maketrans('', '', string.punctuation + string.digits))
+        for item2remove in self.unicodes2remove:
+            sequence = sequence.replace(item2remove, '')
+        sentences = sent_tokenize(sequence)
+        for sent in sentences:
+            tokenized_sent = self.tokenizer.tokenize(sent)
+            tokenized_sent = [w.lower() for w in tokenized_sent]
+            tokenized_sent = [w for w in tokenized_sent if w and w not in self.english_stop_words]
+            seq_length += len(tokenized_sent)+1
+            mle += self.mle(tokenized_sent)
+        return -(1 / seq_length) * mle
 
     def perplexity(self, sequence):
         ce = self.cross_entropy(sequence)
-        print('cross entropy: ', ce)
         return pow(2, ce)
