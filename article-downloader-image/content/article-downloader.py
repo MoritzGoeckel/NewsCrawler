@@ -3,6 +3,7 @@ import os
 import time as t
 from datetime import datetime, date, time, timedelta
 import json
+import bson
 from newspaper import Article, Config
 from bs4 import BeautifulSoup
 import hashlib
@@ -85,13 +86,13 @@ def downloadArticle(url, source, agtClient, pqClient):
         pushed = False
         if not alreadyGotThat(h, agtClient):
             setAlreadyGotThat(h, agtClient)
-            data = json.dumps(a)
+            data = bson.dumps(a)
             pushNewEntry(data, pqClient)
             pushed = True
 
-        pushedMsg = 'agt'
+        pushedMsg = 'agt: '
         if pushed:
-            pushedMsg = 'new'
+            pushedMsg = 'new: '
 
         print(pushedMsg, "\t", a)
 
