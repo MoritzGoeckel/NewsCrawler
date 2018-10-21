@@ -13,27 +13,30 @@ def main():
 
         latest = 0
         if collection_entropy.count_documents({}) > 0:
-            e = collection_entropy.find().sort([('ArticleDateTime',-1)]).limit(1).next()
+            e = collection_entropy.find().sort([('article_datetime',-1)]).limit(1).next()
             if e:
-                latest = e['ArticleDateTime']
+                latest = e['article_datetime']
 
         print('latest: ', latest)
 
-        articles = collection_articles.find({'DateTime':{'$gt':latest}})
+        articles = collection_articles.find({'datetime':{'$gt':latest}})
         model = Model(n=3)
         model.read_frequencies(path='frequencies/reuters_adjusted_freq') #TODO: should this path be part of the env-variables?
         #print('calculations on', len(articles), 'articles') -> converting to list would work only for small data since its needs 
         #to be loaded into the memory
+        c = 0
         for article in articles:
-            article_content = article['Content']
-            article_date_time = article['DateTime']
-            article_url = article['Url']
+            article_content = article['content']
+            article_date_time = article['datetime']
+            article_url = article['url']
             article_id = article['_id']
             pp = model.perplexity(article_content)
             collection_entropy.insert_one({'article_id': article_id,
-                                           'article_DateTime': article_date_time,
-                                           'article_Url': article_url,
+                                           'article_datetime': article_date_time,
+                                           'article_url': article_url,
                                            'article_perplexity': pp})
+            c += 1
+        print('Processed', c, 'articles')
 
 
 def getConnection():
