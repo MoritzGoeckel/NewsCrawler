@@ -11,12 +11,19 @@ def main():
         collection_entropy = mongoClient.news.entropy
         collection_articles = mongoClient.news.articles
 
-        e = collection_entropy.find().sort({'ArticleDateTime':-1}).limit(1)
-        latest = e['ArticleDateTime']
+        latest = 0
+        if collection_entropy.count_documents({}) > 0:
+            e = collection_entropy.find().sort([('ArticleDateTime',-1)]).limit(1).next()
+            if e:
+                latest = e['ArticleDateTime']
+
+        print('latest: ', latest)
 
         articles = collection_articles.find({'DateTime':{'$gt':latest}})
         model = Model(n=3)
         model.read_frequencies(path='frequencies/reuters_adjusted_freq') #TODO: should this path be part of the env-variables?
+        #print('calculations on', len(articles), 'articles') -> converting to list would work only for small data since its needs 
+        #to be loaded into the memory
         for article in articles:
             article_content = article['Content']
             article_date_time = article['DateTime']
@@ -51,3 +58,7 @@ def getConnection():
 
     print('Mongo connection established')
     return client
+
+
+if __name__ == "__main__":
+    main()

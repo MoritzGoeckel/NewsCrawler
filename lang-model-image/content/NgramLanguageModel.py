@@ -1,4 +1,6 @@
 import string
+import nltk
+nltk.download('stopwords')
 from nltk.tokenize import TweetTokenizer, sent_tokenize
 from nltk.corpus import stopwords, reuters
 import numpy as np
