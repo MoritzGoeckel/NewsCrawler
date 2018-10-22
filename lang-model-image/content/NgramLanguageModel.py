@@ -37,7 +37,6 @@ class Model(object):
         """
         path = path[:-5] if path.endswith('.json') else path
         with open(path+'_n'+str(self.n)+'.json', mode='r') as f:
-            #reader = csv.reader(f, delimiter='\t')
             self.ngram_frequencies['n'+str(self.n)] = Counter(ujson.load(f))
         self.ngram_counts = self.ngram_frequencies['n' + str(self.n)]
         self.nc_values = list(self.ngram_counts.values())
@@ -58,7 +57,6 @@ class Model(object):
 
     def mle(self, sequence):
         p = 0
-        print(self.ngram_counts)
         for ngram in self._ngrams(sequence):
             ngram = ' '.join(ngram)
             ngram_frequency = self.ngram_counts[ngram]

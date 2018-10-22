@@ -22,19 +22,18 @@ def main():
         articles = collection_articles.find({'datetime':{'$gt':latest}})
         model = Model(n=3)
         model.read_frequencies(path='frequencies/reuters_adjusted_freq') #TODO: should this path be part of the env-variables?
-        #print('calculations on', len(articles), 'articles') -> converting to list would work only for small data since its needs 
-        #to be loaded into the memory
-        c = 0
+        c = 0 #needs to be done this way instead of len(list(articles)) to avoid memory problems
         for article in articles:
             article_content = article['content']
-            article_date_time = article['datetime']
-            article_url = article['url']
-            article_id = article['_id']
-            pp = model.perplexity(article_content)
-            collection_entropy.insert_one({'article_id': article_id,
-                                           'article_datetime': article_date_time,
-                                           'article_url': article_url,
-                                           'article_perplexity': pp})
+            if article_content:
+                article_date_time = article['datetime']
+                article_url = article['url']
+                article_id = article['_id']
+                pp = model.perplexity(article_content)
+                collection_entropy.insert_one({'article_id': article_id,
+                                               'article_datetime': article_date_time,
+                                               'article_url': article_url,
+                                               'article_perplexity': pp})
             c += 1
         print('Processed', c, 'articles')
 
