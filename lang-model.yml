@@ -4,7 +4,7 @@ metadata:
   name: lang-model
 spec:
   startingDeadlineSeconds: 3000
-  schedule: "*/5 * * * *"
+  schedule: "*/20 * * * *"
   concurrencyPolicy: Replace
   jobTemplate:
     spec:
