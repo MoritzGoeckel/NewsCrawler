@@ -1,0 +1,24 @@
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: lang-model
+spec:
+  startingDeadlineSeconds: 3000
+  schedule: "*/20 * * * *"
+  concurrencyPolicy: Replace
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: lang-model 
+            image: joapfel/langmodel:0.01
+            imagePullPolicy: Always
+            env:
+            - name: mongo-url
+              value: mongodb.default.svc.cluster.local
+            - name: mongo-user
+              value: root
+            - name: mongo-pw
+              value: thepw
+          restartPolicy: OnFailure

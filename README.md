@@ -91,3 +91,9 @@ sudo kubectl logs <pod name>
 ```
 minikube service api-server
 ```
+
+## Connect to MongoDB
+```
+./connectToPod.sh (podId-as-argument)
+mongo --username <someusername> --password <somepassword> --authenticationDatabase admin
+```
