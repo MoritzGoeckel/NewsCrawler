@@ -3,7 +3,6 @@ import os
 import time as t
 from datetime import datetime, date, time, timedelta
 import json
-#import bson
 from newspaper import Article, Config
 from bs4 import BeautifulSoup
 import hashlib
