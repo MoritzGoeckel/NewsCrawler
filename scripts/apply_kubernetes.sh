@@ -13,3 +13,5 @@ kubectl apply -f link-downloader.yml
 kubectl apply -f processor.yml
 kubectl apply -f api-server.yml
 kubectl apply -f wordcloud-generator.yml
+kubectl apply -f lang-model.yml
+kubectl apply -f headline-analyzer.yml

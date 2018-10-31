@@ -8,18 +8,12 @@ def main():
 
     mongoClient = getConnection()
     if mongoClient:
-        collection_entropy = mongoClient.news.entropy
         collection_articles = mongoClient.news.articles
 
         latest = 0
-        if collection_entropy.count_documents({}) > 0:
-            e = collection_entropy.find().sort([('article_datetime',-1)]).limit(1).next()
-            if e:
-                latest = e['article_datetime']
-
         print('latest: ', latest)
 
-        articles = collection_articles.find({'datetime':{'$gt':latest}})
+        articles = collection_articles.find({'article_perplexity': {'$exists': False}})
         model = Model(n=3)
         model.read_frequencies(path='frequencies/reuters_adjusted_freq') #TODO: should this path be part of the env-variables?
         c = 0 #needs to be done this way instead of len(list(articles)) to avoid memory problems
@@ -30,10 +24,7 @@ def main():
                 article_url = article['url']
                 article_id = article['_id']
                 pp = model.perplexity(article_content)
-                collection_entropy.insert_one({'article_id': article_id,
-                                               'article_datetime': article_date_time,
-                                               'article_url': article_url,
-                                               'article_perplexity': pp})
+                collection_articles.update_one({'_id':article_id}, {'$set': {'article_perplexity': pp}})
             c += 1
         print('Processed', c, 'articles')
 
