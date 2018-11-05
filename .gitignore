@@ -4,5 +4,5 @@
 /api-server-image/content/static/jquery.fittext.js
 /api-server-image/content/static/jquery-ui.min.css
 /api-server-image/content/static/jquery-ui.min.js
-/.vscode/settings.json
+/.vscode/*
 /lang-model-image/content/frequencies/reuters*.json
