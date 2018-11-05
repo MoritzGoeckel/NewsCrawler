@@ -13,3 +13,5 @@ kubectl delete cronjob link-downloader
 kubectl delete deployment processor 
 kubectl delete deployment static-content-server 
 kubectl delete deployment api-server 
+kubectl delete cronjob lang-model
+kubectl delete cronjob headline-analyzer
