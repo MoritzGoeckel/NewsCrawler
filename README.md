@@ -13,7 +13,7 @@ The API server is written in Go. It provides a REST API that can be used by the 
 There are two redis instances for storing hashes of already seen articles and links
 
 ### Article downloader
-Microservice implemented in Go which receives links from the link queue and downloads the corresponding article. This article goes on the article queue
+Microservice implemented in Python which receives links from the link queue and downloads the corresponding article. This article goes on the article queue
 
 ### Link downloader
 Software implemented in Go that visits a set of websites and extracts potentially interesting links and pushes them on the link queue
@@ -26,6 +26,13 @@ Software implemented in Go. It takes articles from the article queue, extracts i
 
 ### Word cloud generator
 This part of the software is also implemented in Go and is responsible to calculate the important words for today
+
+### Language model
+This service is implemented in Python and calculates entropy/perplexity for each newsarticle based on a n-gram language model
+
+### Headline analyzer
+This analyzer is implemented in Python and extracts frequent n-grams with context tokens from headlines based on 
+https://towardsdatascience.com/how-i-used-natural-language-processing-to-extract-context-from-news-headlines-df2cf5181ca6
 
 ### Elasticsearch
 An elasticsearch instance to make the articles searchable
