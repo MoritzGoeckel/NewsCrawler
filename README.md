@@ -4,7 +4,7 @@ The purpose of this project is practicing and experimenting with the microservic
 # Architecture
 This software consists of 12 microservices
 
-![microservice architecture](https://raw.githubusercontent.com/MoritzGoeckel/KubernetesNewsService/master/media/diagram.png)
+![microservice architecture](https://github.com/MoritzGoeckel/KubernetesNewsService/blob/master/media/Newsproject_Backend.png)
 
 ### API server
 The API server is written in Go. It provides a REST API that can be used by the frontend to retrieve data from the databases and serves the frontend
