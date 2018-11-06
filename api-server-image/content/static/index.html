@@ -1,52 +1,374 @@
-﻿<html>
-	<header>
-		<title>Trending News</title>
-        <meta charset="UTF-8">
-		<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
-        <script src="bigtext.js"></script>
-        <script src="jquery.fittext.js"></script>
-        <script src="jquery-ui.min.js"></script>
+<!doctype html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
-        <script src="today.js"></script>
-        <script src="chart.js"></script>
-                
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+    <script src="bigtext.js"></script>
+    <script src="jquery.fittext.js"></script>
+    <script src="jquery-ui.min.js"></script>
 
-        <!-- Latest compiled and minified CSS -->
-        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+    
+    <title>Trending News</title>
 
-        <!-- Optional theme -->
-        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css" integrity="sha384-fLW2N01lMqjakBkx3l/M9EahuwpSfeNvV63J5ezn3uZzapT0u7EYsXMjQV+0En5r" crossorigin="anonymous">
+    <style>
+      /*
+      START: general properties
+      */
+      body{
+        background-color: #212121;
+      }
+      h2{
+        margin: 0;
+      }
+      /*
+      END: general properties
+      */
+      
+      /*
+      START: general container properties
+      */
+      .content-container{
+        height: 500px; /*needed for consistency of the background colors*/
+        background-color: #3c3c3c;
+        margin-top: 20px;
+      }
+      .title-container{
+        background-color: #212121;
+        color: #757575;
+        text-align: left;
+      }
+      /*
+      END: general container properties
+      */
+      
+      /*
+      START: wordcloud
+      */
+      #wordcloud{
+        text-align: center;
+      }
+      /*
+      END: wordcloud
+      */
 
-        <!-- Latest compiled and minified JavaScript -->
-        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+      /*
+      START: counter
+      */
+      #article-counter-container{
+        width: 100%; /*needed because of the absolute position - otherwise centering child elements does not work*/
+        position: absolute;
+        top: 50%;
+        transform: translateY(-43%);
+      }
+      .article-counter{
+        color: #757575;
+        text-align: left;
+        width: 100%;
+        margin-top: 3px;
+        margin-left: 30px;
+        background-color: #616161;
+      }
+      .article-counter h3{
+        color: #212121;
+        margin: 13px 0 0 30px;
+      }
+      .article-counter-value{
+        font-size: 4em;
+        margin: 0 0 -7px 0;
+        text-align: center;
+      }
+      .article-counter .card{
+        background-color: inherit;
+      }
+      .article-counter .card-body{
+        padding: 0;
+      }
+      .pie-chart{
+        width: 100%;
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+      }
+      /*
+      END: counter
+      */
 
-        <link rel="stylesheet" type="text/css" href="style.css">
-        <link rel="stylesheet" type="text/css" href="jquery-ui.min.css">
+      /*
+      START: lang-model
+      */
+      #information-container{
+        overflow: hidden;
+        height: 462px;
+      }
+      .image-overlay{
+        opacity: 0.4;
+      }
+      img{
+        height: 462px;
+      }
+      .carousel-caption{
+        bottom: 50px;
+        right: 60%;
+        text-align: left;
+      }
+      /*
+      END: lang-model
+      */
 
+      /*
+      START: headline analysis
+      */
+      #headline-chart{
+        width: 100%;
+        height: 100%;
+      }
+      /*
+      END: headline analysis
+      */
+    </style>
+  </head>
+  <body>
 
-	</header>
-	<body>
+    <div class="container-fluid">
+        <div class="row">
+          <!--wordcloud -->
+          <div class="col">
+            <div class="content-container" id="first-content-container">
+              <div class="title-container">
+                <h2>Todays most important Words</h2>
+              </div>
+              <div id="wordcloud"></div>
+            </div>
+          </div>
+           <div class="col">
+            <div class="content-container" id="second-content-container">
+              <div class="title-container">
+               <h2>Frequent Headline N-Grams</h2>
+              </div>
+              <div id="headline-analysis-container">
 
-        <div class="container-fluid" style="padding-bottom: 15px;">
+                  <canvas id="headline-chart" ></canvas>
 
-            <div class="col-md-6" id="leftContainer">
-                <h1 class="aktuellesSection">Aktuelles</h1>
-                <div class="aktuellesSection" id="words"></div>
-
-                <h1 class="verlaufSection">Verlauf</h1>
-                <div id="statistics" class="verlaufSection">
-                    <canvas id="chartCanvas"></canvas>
+              </div>
+            </div>
+          </div>
+          
+          <div class="w-100"></div>
+          <!-- -->
+          <div class="col">
+            <div class="content-container" id="third-content-container">
+              <div class="title-container">
+                <h2>Published Articles</h2>
+              </div>
+              <div id="article-counter-container">
+                <div class="row">
+                    <div class="col-4">
+                        <!--div class="container"-->
+                            <div class="row">
+                              <div class="col">
+                                <div class="article-counter">
+                                  <div class="card" style="max-width: 18rem;">
+                                    <div class="card-body">
+                                      <h3 class="card-title">Year</h3>
+                                      <div class="card-text article-counter-value" id="article-counter-year"></div>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                              <div class="col">
+                                <div class="article-counter">
+                                  <div class="card" style="max-width: 18rem;">
+                                    <div class="card-body">
+                                      <h3 class="card-title">Month</h3>
+                                      <div class="card-text article-counter-value" id="article-counter-month"></div>
+                                    </div>
+                                  </div>
+                                  </div>
+                              </div>
+                              <div class="col">
+                                <div class="article-counter">
+                                  <div class="card" style="max-width: 18rem;">
+                                    <div class="card-body">
+                                      <h3 class="card-title">Day</h3>
+                                      <div class="card-text article-counter-value" id="article-counter-day"></div>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                              </div>
+                          <!--/div-->
+                    </div>
+                    <div class="col-8">
+                      <div class="pie-chart">
+                        <canvas id="counter-pie"></canvas>
+                      </div>
+                    </div>
                 </div>
-            </div>
+                
+               
 
-            <div class="col-md-6">
-                <h1 class="artikelSection">Artikel</h1>
-                <div class="artikelSection" id="articles"></div>
-
-                <h1 class="bilderSection">Bilder</h1>
-                <div id="bilder" class="bilderSection"></div>
+                
+              </div>
             </div>
+          </div>
+         
+         <!-- Counter -->
+         <div class="col">
+            <div class="content-container" id="fourth-content-container">
+              <div class="title-container">
+               <h2>Most informative Article</h2>
+              </div>
+              <div id="information-container">
+                <!--div id="article-headline-container"></div>
+                <div id="article-image-container"></div-->
+                  <div id="carouselExampleFade" class="carousel slide carousel-fade" data-ride="carousel">
+                      <div class="carousel-inner">
+                        <div class="carousel-item active">
+                          <a target="_blank" href="https://www.theguardian.com/world/2018/nov/02/plan-create-worlds-biggest-nature-reserve-antarctic-rejected">
+                            <img class="d-block w-100 image-overlay" src="images/thegtemplate.jpg" alt="First slide">
+                          </a>
+                          <div class="carousel-caption d-none d-md-block">
+                            <h5>
+                                Antarctic's future in doubt after plan for world's biggest marine reserve is blocked
+                            </h5>
+                            <p>
+                                Environmental groups say Russia, China and Norway played part in rejecting plan
+                            </p>
+                          </div>
+                        </div>
+                        <div class="carousel-item">
+                          <a target="_blank" href="https://www.nytimes.com/2018/11/02/upshot/the-job-market-is-firing-on-all-cylinders-three-questions-will-determine-how-long-it-can-last.html?action=click&module=Top%20Stories&pgtype=Homepage">
+                            <img class="d-block w-100 image-overlay" src="images/nytemplate.jpg" alt="Second slide">
+                          </a>
+                          <div class="carousel-caption d-none d-md-block">
+                              <h5>
+                                  New Heights for the Job Market. Three Questions Will Determine How Long It Can Last.
+                              </h5>
+                              <p>
+                                  Where is this growth really coming from; how real is the concern over inflation; and how many more workers are out there?
+                              </p>
+                            </div>
+                        </div>
+                        <div class="carousel-item">
+                          <a target="_blank" href="https://www.theguardian.com/books/2018/nov/02/ma-jian-interview-exiled-chinese-writer-free-speech-dissidents-novel">
+                            <img class="d-block w-100 image-overlay" src="images/theg2template.jpg" alt="Third slide">
+                          </a>
+                          <div class="carousel-caption d-none d-md-block">
+                              <h5>
+                                  Ma Jian: ‘Freedom can’t be taken for granted. We have to remain constantly vigilant’
+                              </h5>
+                              <p>
+                                  The exiled Chinese writer on the murder of dissidents, attacks on free speech and his new novel exposing the brutality of his homeland
+                              </p>
+                            </div>
+                        </div>
+                      </div>
+                      <a class="carousel-control-prev" href="#carouselExampleFade" role="button" data-slide="prev">
+                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                        <span class="sr-only">Previous</span>
+                      </a>
+                      <a class="carousel-control-next" href="#carouselExampleFade" role="button" data-slide="next">
+                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                        <span class="sr-only">Next</span>
+                      </a>
+                    </div>
+              </div>
+            </div>
+          </div>
+
         </div>
+    </div>
 
-	</body>
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <!-- script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script-->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+
+
+    <!-- own dependencies -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.17/require.min.js"></script>
+    <script src="counter/countUp.js"></script>
+
+    <script>
+        const url = 'http://192.168.99.100:30003/';
+
+        requirejs.config({
+          paths: {
+            d3: "https://d3js.org/d3.v5.min",
+            cloud: "d3-wordcloud/build/d3.layout.cloud",
+            chart: "https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.3/Chart.min"
+          }
+        });
+    </script>
+    <script src="d3-wordcloud/draw-wordcloud.js"></script>
+    <script src="counter/articleCounter.js"></script>
+
+    <script>
+      var article_headline = "New Heights for the Job Market. Three Questions Will Determine How Long It Can Last.";
+      var imagesrc = "images/nytemplate.jpg";
+      var articlelink = "https://www.nytimes.com/2018/11/02/upshot/the-job-market-is-firing-on-all-cylinders-three-questions-will-determine-how-long-it-can-last.html?action=click&module=Top%20Stories&pgtype=Homepage";
+      $("#article-headline-container").append(`<h3>${article_headline}</h3>`);
+      $("#article-image-container").append(
+      `
+      <a href=${articlelink} target="_blank">
+        <img src=${imagesrc} alt="inlcude alt description from original image here if possible" width="630" height="329">
+      </a>
+      `);
+      //TODO: slider?
+    </script>
+
+    <script>
+require(["chart"], function(Chart){
+
+var ctx = document.getElementById("headline-chart");
+var headlineChart = new Chart(ctx, {
+    type: 'horizontalBar',
+    data: {
+        labels: ["colorless green ideas", "sleep furiously [...]", "random yellow trigrams", "another green trigram", "another purple trigram", "another orange trigram"],
+        datasets: [{
+            label: '# of Votes',
+            data: [12, 19, 3, 5, 2, 3],
+            backgroundColor: [
+                'rgba(255, 99, 132, 0.2)',
+                'rgba(54, 162, 235, 0.2)',
+                'rgba(255, 206, 86, 0.2)',
+                'rgba(75, 192, 192, 0.2)',
+                'rgba(153, 102, 255, 0.2)',
+                'rgba(255, 159, 64, 0.2)'
+            ],
+            borderColor: [
+                'rgba(255,99,132,1)',
+                'rgba(54, 162, 235, 1)',
+                'rgba(255, 206, 86, 1)',
+                'rgba(75, 192, 192, 1)',
+                'rgba(153, 102, 255, 1)',
+                'rgba(255, 159, 64, 1)'
+            ],
+            borderWidth: 1
+        }]
+    },
+    options: {
+      //responsive: false,
+        scales: {
+            yAxes: [{
+                ticks: {
+                    beginAtZero:true
+                }
+            }]
+        }
+    }
+});
+
+
+});
+    
+
+    </script>
+  </body>
 </html>
