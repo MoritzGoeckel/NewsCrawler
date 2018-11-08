@@ -64,10 +64,10 @@ def main():
                     headlines_contain_n.add(headline)
             ngram2headline[n_top[0]] = headlines_contain_n
 
-        #map of the form {ngram : Counter({word1:frequency, word2:frequency})}
-        ngram2words = {}
+        #map of the form {ngram : {"count": count, "frequent_neighbors": Counter({w1:frequency, w2:frequency, ... ,wN:frequency}) } }
+        ngram2words = []
         for ngram, headlines in ngram2headline.items():
-            c = Counter()
+            c2 = Counter()
             for headline in headlines:
                 words = list(TextBlob(headline.replace(ngram, '').strip()).words)
                 for word in words:
@@ -81,12 +81,14 @@ def main():
                         else:
                             lemma = lemmatizer.lemmatize(word)
                         if lemma:
-                            c[lemma] += 1
+                            c2[lemma] += 1
                         else: 
                             print('Lemma was not calculated.')
-                            c[word] += 1
-            c = c.most_common()
-            ngram2words[ngram] = dict(c)
+                            c2[word] += 1
+            c2 = c2.most_common()
+            ngram2words.append({'ngram': ngram,
+                                'count' : c[ngram],
+                                'frequent_neighbors': dict(c2)})
 
         previous = collection_headlines.find_one_and_replace({'ngram2words': {'$exists':True}}, {'ngram2words': ngram2words}, upsert=True)
         print('updated from', previous)

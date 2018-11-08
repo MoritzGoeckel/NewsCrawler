@@ -40,6 +40,8 @@ func main() {
 	router.HandleFunc("/get_word_cloud/", getWordCloudEndpoint)
 	router.HandleFunc("/word_statistics/{query}", getWordStatisticsEndpoint)
 	router.HandleFunc("/get_article_count_since/{date}", getArticelCountSinceEndpoint)
+	router.HandleFunc("/get_high_entropy_article_since/{date}", getHighEntropyArticleSinceEndpoint)
+	router.HandleFunc("/get_headline_ngrams/", getHeadlineNgramsEndpoint)
 
 	//In the end
 	router.PathPrefix("/").Handler(http.FileServer(http.Dir("static")))
@@ -371,6 +373,58 @@ func getArticelCountSinceEndpoint(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Write(js)
+}
+
+func getHighEntropyArticleSinceEndpoint(w http.ResponseWriter, r *http.Request) {
+	collection := mongoClient.DB("news").C("articles")
+
+	vars := mux.Vars(r)
+	dateq := vars["date"]
+
+	var a []BsonArticle
+	query := bson.M{
+		"$and": []bson.M{
+			bson.M{"datetime": bson.M{"$gt": parseRFCTimestringToEpoch(dateq)}},
+			bson.M{"article_perplexity": bson.M{"$exists": true}},
+		},
+	}
+	err := collection.Find(query).Sort("-article_perplexity").All(&a)
+	//err := collection.Find(query).Sort("-article_perplexity").Limit(10).All(&a)
+	//TODO: what should be the limit? Should the client decide?
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println("Highest Entropy-Article", a)
+
+	js, err2 := json.Marshal(a)
+	if err2 != nil {
+		log.Fatal(err2)
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Write(js)
+}
+
+func getHeadlineNgramsEndpoint(w http.ResponseWriter, r *http.Request) {
+	collection := mongoClient.DB("news").C("headlines")
+
+	var h BsonNgram2Words
+	err := collection.Find(bson.M{"ngram2words": bson.M{"$exists": true}}).One(&h)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println("Headline ngrams fetched...", h)
+
+	js, err2 := json.Marshal(h)
+	if err2 != nil {
+		log.Fatal(err2)
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Write(js)
+
 }
 
 func getConnections() (*redis.Client, *elastic.Client, *mgo.Session) {
