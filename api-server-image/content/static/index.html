@@ -228,45 +228,7 @@
                 <div id="article-image-container"></div-->
                   <div id="carouselExampleFade" class="carousel slide carousel-fade" data-ride="carousel">
                       <div class="carousel-inner">
-                        <div class="carousel-item active">
-                          <a target="_blank" href="https://www.theguardian.com/world/2018/nov/02/plan-create-worlds-biggest-nature-reserve-antarctic-rejected">
-                            <img class="d-block w-100 image-overlay" src="images/thegtemplate.jpg" alt="First slide">
-                          </a>
-                          <div class="carousel-caption d-none d-md-block">
-                            <h5>
-                                Antarctic's future in doubt after plan for world's biggest marine reserve is blocked
-                            </h5>
-                            <p>
-                                Environmental groups say Russia, China and Norway played part in rejecting plan
-                            </p>
-                          </div>
-                        </div>
-                        <div class="carousel-item">
-                          <a target="_blank" href="https://www.nytimes.com/2018/11/02/upshot/the-job-market-is-firing-on-all-cylinders-three-questions-will-determine-how-long-it-can-last.html?action=click&module=Top%20Stories&pgtype=Homepage">
-                            <img class="d-block w-100 image-overlay" src="images/nytemplate.jpg" alt="Second slide">
-                          </a>
-                          <div class="carousel-caption d-none d-md-block">
-                              <h5>
-                                  New Heights for the Job Market. Three Questions Will Determine How Long It Can Last.
-                              </h5>
-                              <p>
-                                  Where is this growth really coming from; how real is the concern over inflation; and how many more workers are out there?
-                              </p>
-                            </div>
-                        </div>
-                        <div class="carousel-item">
-                          <a target="_blank" href="https://www.theguardian.com/books/2018/nov/02/ma-jian-interview-exiled-chinese-writer-free-speech-dissidents-novel">
-                            <img class="d-block w-100 image-overlay" src="images/theg2template.jpg" alt="Third slide">
-                          </a>
-                          <div class="carousel-caption d-none d-md-block">
-                              <h5>
-                                  Ma Jian: ‘Freedom can’t be taken for granted. We have to remain constantly vigilant’
-                              </h5>
-                              <p>
-                                  The exiled Chinese writer on the murder of dissidents, attacks on free speech and his new novel exposing the brutality of his homeland
-                              </p>
-                            </div>
-                        </div>
+                        
                       </div>
                       <a class="carousel-control-prev" href="#carouselExampleFade" role="button" data-slide="prev">
                         <span class="carousel-control-prev-icon" aria-hidden="true"></span>
@@ -308,67 +270,7 @@
     </script>
     <script src="d3-wordcloud/draw-wordcloud.js"></script>
     <script src="counter/articleCounter.js"></script>
-
-    <script>
-      var article_headline = "New Heights for the Job Market. Three Questions Will Determine How Long It Can Last.";
-      var imagesrc = "images/nytemplate.jpg";
-      var articlelink = "https://www.nytimes.com/2018/11/02/upshot/the-job-market-is-firing-on-all-cylinders-three-questions-will-determine-how-long-it-can-last.html?action=click&module=Top%20Stories&pgtype=Homepage";
-      $("#article-headline-container").append(`<h3>${article_headline}</h3>`);
-      $("#article-image-container").append(
-      `
-      <a href=${articlelink} target="_blank">
-        <img src=${imagesrc} alt="inlcude alt description from original image here if possible" width="630" height="329">
-      </a>
-      `);
-      //TODO: slider?
-    </script>
-
-    <script>
-require(["chart"], function(Chart){
-
-var ctx = document.getElementById("headline-chart");
-var headlineChart = new Chart(ctx, {
-    type: 'horizontalBar',
-    data: {
-        labels: ["colorless green ideas", "sleep furiously [...]", "random yellow trigrams", "another green trigram", "another purple trigram", "another orange trigram"],
-        datasets: [{
-            label: '# of Votes',
-            data: [12, 19, 3, 5, 2, 3],
-            backgroundColor: [
-                'rgba(255, 99, 132, 0.2)',
-                'rgba(54, 162, 235, 0.2)',
-                'rgba(255, 206, 86, 0.2)',
-                'rgba(75, 192, 192, 0.2)',
-                'rgba(153, 102, 255, 0.2)',
-                'rgba(255, 159, 64, 0.2)'
-            ],
-            borderColor: [
-                'rgba(255,99,132,1)',
-                'rgba(54, 162, 235, 1)',
-                'rgba(255, 206, 86, 1)',
-                'rgba(75, 192, 192, 1)',
-                'rgba(153, 102, 255, 1)',
-                'rgba(255, 159, 64, 1)'
-            ],
-            borderWidth: 1
-        }]
-    },
-    options: {
-      //responsive: false,
-        scales: {
-            yAxes: [{
-                ticks: {
-                    beginAtZero:true
-                }
-            }]
-        }
-    }
-});
-
-
-});
-    
-
-    </script>
+    <script src="article-slider/slider.js"></script>
+    <script src="headline-analysis/headline-ngrams.js"></script>
   </body>
 </html>
