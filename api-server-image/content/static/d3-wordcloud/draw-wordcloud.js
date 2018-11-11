@@ -5,10 +5,12 @@ require(['d3', 'cloud'], function(d3, cloud){
   var words = [];
   var max = 0;
   var min = 0;
-  var wordcloudHight = 500;
+  var wordcloudHight = 480;
   var wordcloudWidth = 800;
 
   var fill = d3.scaleOrdinal(d3.schemeDark2);
+  //domain goes >100 instead of 100 in order to prevent the very dark colors at the end of the scale
+  var fill2 = d3.scaleSequential(d3.interpolateOranges).domain([10, 110]);//TODO: needs to be adjusted if randomSize() is not used for sizing anymore
   //additional color schemes
   //https://github.com/d3/d3-scale-chromatic/blob/master/README.md#schemeCategory10
   var domainScale = d3.scaleLog().domain([min, max]).range([20,100]);
@@ -27,8 +29,7 @@ require(['d3', 'cloud'], function(d3, cloud){
     .on("end", draw);
 
   function draw(words) {
-      console.log("draw..")
-      console.log(words)
+    console.log(words);
       d3.select(wordcloudContainer).append("svg")
           .attr("width", layout.size()[0])
           .attr("height", layout.size()[1])
@@ -39,7 +40,7 @@ require(['d3', 'cloud'], function(d3, cloud){
         .enter().append("text")
           .style("font-size", function(d) { return d.size + "px"; })
           .style("font-family", "Impact")
-          .style("fill", function(d,i){return fill(i); })
+          .style("fill", function(d,i){ return fill2(d.size); })
           .attr("text-anchor", "middle")
           .attr("transform", function(d) {
             return "translate(" + [d.x, d.y] + ")rotate(" + d.rotate + ")";
@@ -48,7 +49,6 @@ require(['d3', 'cloud'], function(d3, cloud){
   }
 
   $.getJSON(url + "get_word_cloud", function( data ) {
-    console.log(url + "get_word_cloud");
   
     max = data[0].Score;
     min = data[data.length - 1].Score;
@@ -56,14 +56,9 @@ require(['d3', 'cloud'], function(d3, cloud){
     $.each(data, function(key, val) {
         var token = val.Word
         var freq = val.Score
-        console.log(token, freq)
         words.push({'text':token, 'size':freq})
     });
    
-    console.log("max: ", max);
-    console.log("min: ", min);
-    console.log("words: ");
-    console.log(words);
     layout.start();
   });
   
