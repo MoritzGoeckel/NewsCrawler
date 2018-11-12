@@ -9,8 +9,8 @@ require(['d3', 'cloud'], function(d3, cloud){
   var wordcloudWidth = 800;
 
   var fill = d3.scaleOrdinal(d3.schemeDark2);
-  //domain goes >100 instead of 100 in order to prevent the very dark colors at the end of the scale
-  var fill2 = d3.scaleSequential(d3.interpolateOranges).domain([10, 110]);//TODO: needs to be adjusted if randomSize() is not used for sizing anymore
+  //domain goes from 0 to >100 instead of 10 to 100 in order to prevent the very dark colors at the end of the scales
+  var fill2 = d3.scaleSequential(d3.interpolateOranges).domain([0, 110]);//TODO: needs to be adjusted if randomSize() is not used for sizing anymore
   //additional color schemes
   //https://github.com/d3/d3-scale-chromatic/blob/master/README.md#schemeCategory10
   var domainScale = d3.scaleLog().domain([min, max]).range([20,100]);

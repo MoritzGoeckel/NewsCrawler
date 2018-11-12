@@ -1,273 +1,161 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <!-- Required meta tags -->
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
-    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
-    <script src="bigtext.js"></script>
-    <script src="jquery.fittext.js"></script>
-    <script src="jquery-ui.min.js"></script>
+<head>
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
-    <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
-    
-    <title>Trending News</title>
+  <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+  <script src="bigtext.js"></script>
+  <script src="jquery.fittext.js"></script>
+  <script src="jquery-ui.min.js"></script>
 
-    <style>
-      /*
-      START: general properties
-      */
-      body{
-        background-color: #212121;
-      }
-      h2{
-        margin: 0;
-      }
-      /*
-      END: general properties
-      */
-      
-      /*
-      START: general container properties
-      */
-      .content-container{
-        height: 500px; /*needed for consistency of the background colors*/
-        background-color: #3c3c3c;
-        margin-top: 20px;
-      }
-      .title-container{
-        background-color: #212121;
-        color: #757575;
-        text-align: left;
-      }
-      /*
-      END: general container properties
-      */
-      
-      /*
-      START: wordcloud
-      */
-      #wordcloud{
-        text-align: center;
-      }
-      /*
-      END: wordcloud
-      */
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO"
+    crossorigin="anonymous">
 
-      /*
-      START: counter
-      */
-      #article-counter-container{
-        width: 100%; /*needed because of the absolute position - otherwise centering child elements does not work*/
-        position: absolute;
-        top: 50%;
-        transform: translateY(-43%);
-      }
-      .article-counter{
-        color: #757575;
-        text-align: left;
-        width: 100%;
-        margin-top: 3px;
-        margin-left: 30px;
-        background-color: #616161;
-      }
-      .article-counter h3{
-        color: #212121;
-        margin: 13px 0 0 30px;
-      }
-      .article-counter-value{
-        font-size: 4em;
-        margin: 0 0 -7px 0;
-        text-align: center;
-      }
-      .article-counter .card{
-        background-color: inherit;
-      }
-      .article-counter .card-body{
-        padding: 0;
-      }
-      .pie-chart{
-        width: 100%;
-        position: absolute;
-        top: 50%;
-        transform: translateY(-50%);
-      }
-      /*
-      END: counter
-      */
+  <!-- own layout  -->
+  <link ref="stylesheet" href="general-style.css">
+  <link ref="stylesheet" href="home-style.css">
 
-      /*
-      START: lang-model
-      */
-      #information-container{
-        overflow: hidden;
-        height: 462px;
-      }
-      .image-overlay{
-        opacity: 0.4;
-      }
-      img{
-        height: 462px;
-      }
-      .carousel-caption{
-        bottom: 50px;
-        right: 60%;
-        text-align: left;
-      }
-      /*
-      END: lang-model
-      */
+  <title>Trending News</title>
 
-      /*
-      START: headline analysis
-      */
-      #headline-chart{
-        width: 100%;
-        height: 100%;
-      }
-      /*
-      END: headline analysis
-      */
-    </style>
-  </head>
-  <body>
+</head>
 
-    <div class="container-fluid">
-        <div class="row">
-          <!--wordcloud -->
-          <div class="col-lg-6 col-md-12">
-            <div class="content-container" id="first-content-container">
-              <div class="title-container">
-                <h2>Todays most important Words</h2>
-              </div>
-              <div id="wordcloud"></div>
-            </div>
+<body>
+  <div class="container-fluid">
+    <div class="row">
+      <!--wordcloud -->
+      <div class="col-lg-6 col-md-12">
+        <div class="content-container" id="first-content-container">
+          <div class="title-container">
+            <h2>Todays most important Words</h2>
           </div>
-           <div class="col-lg-6 col-md-12">
-            <div class="content-container" id="second-content-container">
-              <div class="title-container">
-               <h2>Frequent Headline N-Grams</h2>
-              </div>
-              <div id="headline-analysis-container">
-
-                  <canvas id="headline-chart" ></canvas>
-
-              </div>
-            </div>
+          <div id="wordcloud"></div>
+        </div>
+      </div>
+      <div class="col-lg-6 col-md-12">
+        <div class="content-container" id="second-content-container">
+          <div class="title-container">
+            <h2>Frequent Headline N-Grams</h2>
           </div>
-          
-          <div class="w-100"></div>
-          <!-- -->
-          <div class="col-lg-6 col-md-12">
-            <div class="content-container" id="third-content-container">
-              <div class="title-container">
-                <h2>Published Articles</h2>
-              </div>
-              <div id="article-counter-container">
+          <div id="headline-analysis-container">
+            <canvas id="headline-chart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <div class="w-100"></div>
+
+      <!-- Counter -->
+      <div class="col-lg-6 col-md-12">
+        <div class="content-container" id="third-content-container">
+          <div class="title-container">
+            <h2>Published Articles</h2>
+          </div>
+          <div id="article-counter-container">
+            <div class="row">
+              <div class="col-4">
+                <!--div class="container"-->
                 <div class="row">
-                    <div class="col-4">
-                        <!--div class="container"-->
-                            <div class="row">
-                              <div class="col">
-                                <div class="article-counter">
-                                  <div class="card" style="max-width: 18rem;">
-                                    <div class="card-body">
-                                      <h3 class="card-title">Year</h3>
-                                      <div class="card-text article-counter-value" id="article-counter-year"></div>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col">
-                                <div class="article-counter">
-                                  <div class="card" style="max-width: 18rem;">
-                                    <div class="card-body">
-                                      <h3 class="card-title">Month</h3>
-                                      <div class="card-text article-counter-value" id="article-counter-month"></div>
-                                    </div>
-                                  </div>
-                                  </div>
-                              </div>
-                              <div class="col">
-                                <div class="article-counter">
-                                  <div class="card" style="max-width: 18rem;">
-                                    <div class="card-body">
-                                      <h3 class="card-title">Day</h3>
-                                      <div class="card-text article-counter-value" id="article-counter-day"></div>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              </div>
-                          <!--/div-->
-                    </div>
-                    <div class="col-8">
-                      <div class="pie-chart">
-                        <canvas id="counter-pie"></canvas>
+                  <div class="col">
+                    <div class="article-counter">
+                      <div class="card" style="max-width: 18rem;">
+                        <div class="card-body">
+                          <h3 class="card-title">Year</h3>
+                          <div class="card-text article-counter-value" id="article-counter-year"></div>
+                        </div>
                       </div>
                     </div>
+                  </div>
+                  <div class="col">
+                    <div class="article-counter">
+                      <div class="card" style="max-width: 18rem;">
+                        <div class="card-body">
+                          <h3 class="card-title">Month</h3>
+                          <div class="card-text article-counter-value" id="article-counter-month"></div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col">
+                    <div class="article-counter">
+                      <div class="card" style="max-width: 18rem;">
+                        <div class="card-body">
+                          <h3 class="card-title">Day</h3>
+                          <div class="card-text article-counter-value" id="article-counter-day"></div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                
-               
-
-                
+                <!--/div-->
               </div>
-            </div>
-          </div>
-         
-         <!-- Counter -->
-         <div class="col-lg-6 col-md-12">
-            <div class="content-container" id="fourth-content-container">
-              <div class="title-container">
-               <h2>Most informative Article</h2>
-              </div>
-              <div id="information-container">
-                <!--div id="article-headline-container"></div>
-                <div id="article-image-container"></div-->
-                  <div id="carouselExampleFade" class="carousel slide carousel-fade" data-ride="carousel">
-                      <div class="carousel-inner">
-                        
-                      </div>
-                      <a class="carousel-control-prev" href="#carouselExampleFade" role="button" data-slide="prev">
-                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                        <span class="sr-only">Previous</span>
-                      </a>
-                      <a class="carousel-control-next" href="#carouselExampleFade" role="button" data-slide="next">
-                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                        <span class="sr-only">Next</span>
-                      </a>
-                    </div>
+              <div class="col-8">
+                <div class="pie-chart">
+                  <canvas id="counter-pie"></canvas>
+                </div>
               </div>
             </div>
           </div>
         </div>
+      </div>
+
+      <!-- Counter -->
+      <div class="col-lg-6 col-md-12">
+        <div class="content-container" id="fourth-content-container">
+          <div class="title-container">
+            <h2>Most informative Article</h2>
+          </div>
+          <div id="information-container">
+            <!--div id="article-headline-container"></div>
+                <div id="article-image-container"></div-->
+            <div id="carouselExampleFade" class="carousel slide carousel-fade" data-ride="carousel">
+              <div class="carousel-inner">
+
+              </div>
+              <a class="carousel-control-prev" href="#carouselExampleFade" role="button" data-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                <span class="sr-only">Previous</span>
+              </a>
+              <a class="carousel-control-next" href="#carouselExampleFade" role="button" data-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                <span class="sr-only">Next</span>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
+  </div>
 
-    <!-- Optional JavaScript -->
-    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
-    <!-- script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script-->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+  <!-- Optional JavaScript -->
+  <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+  <!-- script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script-->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49"
+    crossorigin="anonymous"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy"
+    crossorigin="anonymous"></script>
 
-    <!-- own dependencies -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.17/require.min.js"></script>
-    <script src="counter/countUp.js"></script>
-    <script>
-        const url = 'http://192.168.99.100:30003/';
+  <!-- own dependencies -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.17/require.min.js"></script>
+  <script src="counter/countUp.js"></script>
+  <script>
+    const url = 'http://192.168.99.100:30003/';
 
-        requirejs.config({
-          paths: {
-            d3: "https://d3js.org/d3.v5.min",
-            cloud: "d3-wordcloud/build/d3.layout.cloud",
-            chart: "https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.3/Chart.min"
-          }
-        });
-    </script>
-    <script src="d3-wordcloud/draw-wordcloud.js"></script>
-    <script src="counter/articleCounter.js"></script>
-    <script src="article-slider/slider.js"></script>
-    <script src="headline-analysis/headline-ngrams.js"></script>
-  </body>
+    requirejs.config({
+      paths: {
+        d3: "https://d3js.org/d3.v5.min",
+        cloud: "d3-wordcloud/build/d3.layout.cloud",
+        chart: "https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.3/Chart.min"
+      }
+    });
+  </script>
+  <script src="d3-wordcloud/draw-wordcloud.js"></script>
+  <script src="counter/articleCounter.js"></script>
+  <script src="article-slider/slider.js"></script>
+  <script src="headline-analysis/headline-ngrams.js"></script>
+</body>
+
 </html>
