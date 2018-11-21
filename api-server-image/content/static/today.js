@@ -24,6 +24,13 @@ $(function(){
     })
 });
 
+//get high entropy article
+$(function(){
+    $.getJSON(url + "get_high_entropy_article_since", function(data){
+        console.log("High Entropy-Article: ", data)
+    })
+});
+
 $(function(){
     $(".artikelSection").hide();
     $(".verlaufSection").hide();

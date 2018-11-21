@@ -1,3 +1,7 @@
+body{
+    background-color: red;
+}
+
 #statistics, #words, #articles, #bilder{
     text-transform: uppercase;
     text-align: justify;
