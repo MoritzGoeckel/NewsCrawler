@@ -85,7 +85,7 @@ function setWord(index, element)
     //var word = words[index];
     console.log(word);
 
-    $("#information-container").show('slide', { direction: 'left' }, 300);
+    $("#articleimages-container").show('slide', { direction: 'left' }, 300);
     
     $(".word").removeClass("activeWord");
     $(element).toggleClass("activeWord");
@@ -111,7 +111,7 @@ function setWord(index, element)
 
         $("#article-counter-container").show('slide', { direction: 'left' }, 300);
 
-        var ctx = document.getElementById("word-articlefrequency-canvas").getContext("2d");
+        var ctx = document.getElementById("chartCanvas").getContext("2d");
 
         if (typeof theLineChart !== 'undefined') {
             theLineChart.destroy();
@@ -126,7 +126,7 @@ function setWord(index, element)
                     data: yData,
                     lineTension: 0.2,
                     borderColor: 'rgba(143, 143, 36, 1)',
-                    backgroundColor: 'rgba(0,0,0,1)'
+                    backgroundColor: 'rgba(143, 143, 36, 0.3)'
                 }],
                 options: {
                     scales: {
@@ -160,15 +160,15 @@ function setWord(index, element)
             if (count < 400)
                 output += "<a href='" + val.url + "'>" + shortStr(val.headline, 70) + "</a> <span class='sourceName'>[" + shortStr(val.source, 20) + "]</span><br />";
                 
-            if (count < 7)
+            if (count < 9)
                 bilderHTML += "<a target='_blank' href='"+val.url+"'><img src='" + val.image + "' /></a>";
             
             count++;
         });
 
-        $("#headline-analysis-container").html(output);
-        $("#headline-analysis-container").show('slide', { direction: 'right' }, 300);
-        $("#information-container").html(bilderHTML);
+        $("#related-articles-container").html(output);
+        $("#related-articles-container").show('slide', { direction: 'right' }, 300);
+        $("#articleimages-container").html(bilderHTML);
 
         //onResize();
     });
